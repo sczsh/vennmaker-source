@@ -13,6 +13,3 @@ Currently the Unit Tests are failing. Build with -DskipTests
 
 Build: mvn -DskipTests clean install
 Run: java -jar target/vennmaker-<version>-jar-with-dependencies.jar
-
-### Known Issues
-VennMaker currently crashes on startup. This is resolved by rearranging the message(s).property files
