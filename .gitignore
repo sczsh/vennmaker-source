@@ -1,5 +1,5 @@
 *.iml
-target/*
+target/
 target
 iml
 .gitconfig
