@@ -1,7 +1,5 @@
 package util;
 
-import java.lang.reflect.Field;
-
 import org.junit.Ignore;
 import org.junit.runner.Description;
 import org.junit.runner.notification.RunNotifier;
@@ -10,98 +8,83 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 
-public class RepeatRunner extends BlockJUnit4ClassRunner
-{
+import java.lang.reflect.Field;
 
-	public RepeatRunner(Class<?> klass) throws InitializationError
-	{
-		super(klass);
-	}
+public class RepeatRunner extends BlockJUnit4ClassRunner {
 
-	@Override
-	protected Description describeChild(FrameworkMethod method)
-	{
-		if (method.getAnnotation(Repeat.class) != null
-				&& method.getAnnotation(Ignore.class) == null)
-		{
+    public RepeatRunner(Class<?> klass) throws InitializationError {
+        super(klass);
+    }
 
-			return describeRepeatTest(method);
-		}
-		return super.describeChild(method);
-	}
+    @Override
+    protected Description describeChild(FrameworkMethod method) {
+        if (method.getAnnotation(Repeat.class) != null
+                && method.getAnnotation(Ignore.class) == null) {
 
-	private Description describeRepeatTest(FrameworkMethod method)
-	{
-		int times = method.getAnnotation(Repeat.class).value();
+            return describeRepeatTest(method);
+        }
+        return super.describeChild(method);
+    }
 
-		Description desc = Description.createSuiteDescription(testName(method)
-				+ "[" + times + "] times", method.getAnnotations());
+    private Description describeRepeatTest(FrameworkMethod method) {
+        int times = method.getAnnotation(Repeat.class).value();
 
-		for (int i = 0; i < times; ++i)
-		{
-			desc.addChild(Description.createTestDescription(getTestClass()
-					.getJavaClass(), "[" + i + "] " + testName(method)));
-		}
+        Description desc = Description.createSuiteDescription(testName(method)
+                + "[" + times + "] times", method.getAnnotations());
 
-		return desc;
-	}
+        for (int i = 0; i < times; ++i) {
+            desc.addChild(Description.createTestDescription(getTestClass()
+                    .getJavaClass(), "[" + i + "] " + testName(method)));
+        }
 
-	@Override
-	protected void runChild(FrameworkMethod method, RunNotifier notifier)
-	{
+        return desc;
+    }
 
-		Description desc = describeChild(method);
-		ResetSingleton resetSingle = desc.getAnnotation(ResetSingleton.class);
+    @Override
+    protected void runChild(FrameworkMethod method, RunNotifier notifier) {
 
-		// wenn repeat an und ignore aus
-		if (method.getAnnotation(Repeat.class) != null
-				&& method.getAnnotation(Ignore.class) == null)
-		{
-			if (resetSingle != null)
-			{
-				try
-				{
-					runRepeated(methodBlock(method), desc, notifier,
-							resetSingle.type(), resetSingle.field());
-				} catch (NoSuchFieldException | SecurityException
-						| IllegalArgumentException | IllegalAccessException e)
-				{
-					e.printStackTrace();
-				}
-			}
-			else
-			{
-				runRepeated(methodBlock(method), desc, notifier);
-			}
-			return;
-		}
+        Description desc = describeChild(method);
+        ResetSingleton resetSingle = desc.getAnnotation(ResetSingleton.class);
 
-		super.runChild(method, notifier);
-	}
+        // wenn repeat an und ignore aus
+        if (method.getAnnotation(Repeat.class) != null
+                && method.getAnnotation(Ignore.class) == null) {
+            if (resetSingle != null) {
+                try {
+                    runRepeated(methodBlock(method), desc, notifier,
+                            resetSingle.type(), resetSingle.field());
+                } catch (NoSuchFieldException | SecurityException
+                        | IllegalArgumentException | IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                runRepeated(methodBlock(method), desc, notifier);
+            }
+            return;
+        }
 
-	private void runRepeated(Statement methodBlock, Description desc,
-			RunNotifier notifier)
-	{
+        super.runChild(method, notifier);
+    }
 
-		for (Description d : desc.getChildren())
-		{
+    private void runRepeated(Statement methodBlock, Description desc,
+                             RunNotifier notifier) {
 
-			runLeaf(methodBlock, d, notifier);
-		}
-	}
+        for (Description d : desc.getChildren()) {
 
-	private void runRepeated(Statement methodBlock, Description desc,
-			RunNotifier notifier, Class _class, String _field)
-			throws NoSuchFieldException, SecurityException,
-			IllegalArgumentException, IllegalAccessException
-	{
+            runLeaf(methodBlock, d, notifier);
+        }
+    }
 
-		for (Description d : desc.getChildren())
-		{
-			Field instance = _class.getDeclaredField(_field);
-			instance.setAccessible(true);
-			instance.set(null, null);
-			runLeaf(methodBlock, d, notifier);
-		}
-	}
+    private void runRepeated(Statement methodBlock, Description desc,
+                             RunNotifier notifier, Class _class, String _field)
+            throws NoSuchFieldException, SecurityException,
+            IllegalArgumentException, IllegalAccessException {
+
+        for (Description d : desc.getChildren()) {
+            Field instance = _class.getDeclaredField(_field);
+            instance.setAccessible(true);
+            instance.set(null, null);
+            runLeaf(methodBlock, d, notifier);
+        }
+    }
 }

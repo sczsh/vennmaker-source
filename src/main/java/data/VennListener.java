@@ -1,6 +1,5 @@
 package data;
 
-public interface VennListener
-{
-	public void update();
+public interface VennListener {
+    public void update();
 }

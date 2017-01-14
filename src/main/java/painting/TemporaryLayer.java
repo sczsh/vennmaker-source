@@ -1,43 +1,37 @@
 package painting;
 
-import java.awt.Graphics;
-import java.util.Vector;
-
 import data.Relation;
 
-public class TemporaryLayer extends PaintLayer implements PaintLayerInterface
-{
-	private static final long	serialVersionUID	= 1L;
+import java.awt.*;
+import java.util.Vector;
 
-	private Vector<Object>		temporaryItems		= new Vector<Object>();
+public class TemporaryLayer extends PaintLayer implements PaintLayerInterface {
+    private static final long serialVersionUID = 1L;
 
-	public TemporaryLayer()
-	{
-		
-	}
+    private Vector<Object> temporaryItems = new Vector<Object>();
 
-	@Override
-	public void setTransparency(byte alpha)
-	{
-		// TODO Auto-generated method stub
+    public TemporaryLayer() {
 
-	}
+    }
 
-	@Override
-	public byte getTransparency()
-	{
-		// TODO Auto-generated method stub
-		return 0;
-	}
+    @Override
+    public void setTransparency(byte alpha) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public byte getTransparency() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
 
 
-	@Override
-	public void paintComponent(final Graphics graphics)
-	{
-		for (Object o : temporaryItems)
-		{
-			if (o instanceof Relation);
-				//Utilities.drawRelation((Relation) o, (Graphics2D) graphics);
-		}
-	}
+    @Override
+    public void paintComponent(final Graphics graphics) {
+        for (Object o : temporaryItems) {
+            if (o instanceof Relation) ;
+            //Utilities.drawRelation((Relation) o, (Graphics2D) graphics);
+        }
+    }
 }

@@ -1,5 +1,7 @@
 package interview.elements.alter;
 
+import data.Akteur;
+import data.AttributeType;
 import gui.Messages;
 import gui.VennMaker;
 import gui.configdialog.ConfigDialog;
@@ -13,198 +15,172 @@ import interview.elements.StandardElement;
 import interview.elements.information.MultiSelectionElementInformation;
 import interview.panels.multi.MixedAnswerPanel;
 
+import javax.swing.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-
-import data.Akteur;
-import data.AttributeType;
-
 /**
  * Dialog to set many attributes (free & categorical) for one actor. (one actor,
  * multiple attributes with categorical or free values)
- * 
+ * <p>
  * dialog 7 in the following document:
  * https://vennmaker.uni-trier.de/trac/projects
  * /vennmaker/attachment/wiki/Interviewmodus/fragebogenkonfiguration_2.pdf
- * 
- * 
- * 
  */
 public class AlterMultiAttributeOneActorElement extends StandardElement
-		implements UpdateListener, IECategory_NameInterpretator
-{
-	private static final long		serialVersionUID	= 1L;
+        implements UpdateListener, IECategory_NameInterpretator {
+    private static final long serialVersionUID = 1L;
 
-	private Icon						icon;
+    private Icon icon;
 
-	private List<AttributeType>	attributes;
+    private List<AttributeType> attributes;
 
-	private Map<String, Integer>	attributeOrder;
+    private Map<String, Integer> attributeOrder;
 
-	public AlterMultiAttributeOneActorElement()
-	{
-		super(new NameInfoPanel(false), new AlteriFilterPanel(),
-				new MultiAttributePanel(), true);
+    public AlterMultiAttributeOneActorElement() {
+        super(new NameInfoPanel(false), new AlteriFilterPanel(),
+                new MultiAttributePanel(), true);
 
-		attributes = VennMaker.getInstance().getProject()
-				.getAttributeTypes("ACTOR");
+        attributes = VennMaker.getInstance().getProject()
+                .getAttributeTypes("ACTOR");
 
-		aSelector.setParent(this);
-		aSelector.init(attributes);
-		aSelector.addUpdateListener(this);
-		// my own panel
-		specialPanel = new MixedAnswerPanel();
+        aSelector.setParent(this);
+        aSelector.init(attributes);
+        aSelector.addUpdateListener(this);
+        // my own panel
+        specialPanel = new MixedAnswerPanel();
 
-		// set instruction text
-		this.instructionText = Messages
-				.getString("AlterMultiAttributeOneActorElement.Description"); //$NON-NLS-1$
+        // set instruction text
+        this.instructionText = Messages
+                .getString("AlterMultiAttributeOneActorElement.Description"); //$NON-NLS-1$
 
-		icon = new ImageIcon("icons/intern/icon.png");
+        icon = new ImageIcon("icons/intern/icon.png");
 
-	}
+    }
 
-	@Override
-	public boolean addToTree()
-	{
-		// check if at least one attribute is selected
-		Map<String, AttributeType> questions = aSelector
-				.getAttributesAndQuestions();
-		if (questions == null || questions.size() <= 0)
-		{
-			JOptionPane
-					.showMessageDialog(
-							ConfigDialog.getInstance(),
-							Messages
-									.getString("InterviewElement.AtLeastOneAttribute.Description"), //$NON-NLS-1$
-							Messages
-									.getString("InterviewElement.AtLeastOneAttribute.Title"), //$NON-NLS-1$
-							JOptionPane.INFORMATION_MESSAGE, icon);
-			return false;
-		}
+    @Override
+    public boolean addToTree() {
+        // check if at least one attribute is selected
+        Map<String, AttributeType> questions = aSelector
+                .getAttributesAndQuestions();
+        if (questions == null || questions.size() <= 0) {
+            JOptionPane
+                    .showMessageDialog(
+                            ConfigDialog.getInstance(),
+                            Messages
+                                    .getString("InterviewElement.AtLeastOneAttribute.Description"), //$NON-NLS-1$
+                            Messages
+                                    .getString("InterviewElement.AtLeastOneAttribute.Title"), //$NON-NLS-1$
+                            JOptionPane.INFORMATION_MESSAGE, icon);
+            return false;
+        }
 
-		Map<String, AttributeType> attsAndQuestions = aSelector
-				.getAttributesAndQuestions();
+        Map<String, AttributeType> attsAndQuestions = aSelector
+                .getAttributesAndQuestions();
 
-		if (attributeOrder == null)
-			attributeOrder = new HashMap<String, Integer>();
+        if (attributeOrder == null)
+            attributeOrder = new HashMap<String, Integer>();
 
-		for (String question : attsAndQuestions.keySet())
-			attributeOrder
-					.put(attsAndQuestions.get(question).toString(), Integer
-							.parseInt(question.substring(0, question
-									.indexOf(MultiAttributePanel.QUESTION_SEPERATOR))));
+        for (String question : attsAndQuestions.keySet())
+            attributeOrder
+                    .put(attsAndQuestions.get(question).toString(), Integer
+                            .parseInt(question.substring(0, question
+                                    .indexOf(MultiAttributePanel.QUESTION_SEPERATOR))));
 
-		return super.addToTree();
-	}
+        return super.addToTree();
+    }
 
-	@Override
-	public JPanel getConfigurationDialog()
-	{
-		// first update Attributes
+    @Override
+    public JPanel getConfigurationDialog() {
+        // first update Attributes
 
-		List<AttributeType> projectAttributes = VennMaker.getInstance()
-				.getProject().getAttributeTypes("ACTOR");
+        List<AttributeType> projectAttributes = VennMaker.getInstance()
+                .getProject().getAttributeTypes("ACTOR");
 
-		if (attributes.size() > projectAttributes.size())
-		{
-			for (int i = 0; i < attributes.size(); i++)
-				if (!projectAttributes.contains(attributes.get(i)))
-					attributes.remove(i);
+        if (attributes.size() > projectAttributes.size()) {
+            for (int i = 0; i < attributes.size(); i++)
+                if (!projectAttributes.contains(attributes.get(i)))
+                    attributes.remove(i);
 
-		}
-		else if (attributes.size() < projectAttributes.size())
-		{
-			for (AttributeType at : projectAttributes)
-				if (!attributes.contains(at))
-					attributes.add(at);
-		}
+        } else if (attributes.size() < projectAttributes.size()) {
+            for (AttributeType at : projectAttributes)
+                if (!attributes.contains(at))
+                    attributes.add(at);
+        }
 
-		aSelector.updatePanel(attributes);
+        aSelector.updatePanel(attributes);
 
-		return super.getConfigurationDialog();
-	}
+        return super.getConfigurationDialog();
+    }
 
-	public JPanel getControllerDialog()
-	{
-		setActors(fSelector.getFilteredActors());
-		return super.getControllerDialog();
-	}
+    public JPanel getControllerDialog() {
+        setActors(fSelector.getFilteredActors());
+        return super.getControllerDialog();
+    }
 
-	public void setActors(List<Akteur> actors)
-	{
-		this.actors.clear();
+    public void setActors(List<Akteur> actors) {
+        this.actors.clear();
 
-		for (Akteur actor : actors)
-		{
-			if (!this.actors.contains(actor))
-				this.actors.add(actor);
-		}
-	}
+        for (Akteur actor : actors) {
+            if (!this.actors.contains(actor))
+                this.actors.add(actor);
+        }
+    }
 
-	public void setElementInfo(InterviewElementInformation information)
-	{
-		if (!(information instanceof MultiSelectionElementInformation))
-			return;
+    public void setElementInfo(InterviewElementInformation information) {
+        if (!(information instanceof MultiSelectionElementInformation))
+            return;
 
-		this.attributeOrder = ((MultiSelectionElementInformation) information)
-				.getAttributeTypeOrder();
+        this.attributeOrder = ((MultiSelectionElementInformation) information)
+                .getAttributeTypeOrder();
 
-		List<AttributeType> tmpAtts = VennMaker.getInstance().getProject()
-				.getAttributeTypes();
+        List<AttributeType> tmpAtts = VennMaker.getInstance().getProject()
+                .getAttributeTypes();
 
-		if (attributeOrder != null)
-		{
-			for (AttributeType type : tmpAtts)
-			{
-				if (attributeOrder.get(type.toString()) == null)
-					continue;
+        if (attributeOrder != null) {
+            for (AttributeType type : tmpAtts) {
+                if (attributeOrder.get(type.toString()) == null)
+                    continue;
 
-				attributes.remove(type);
-				attributes.add(attributeOrder.get(type.toString()), type);
-			}
-		}
+                attributes.remove(type);
+                attributes.add(attributeOrder.get(type.toString()), type);
+            }
+        }
 
-		super.setElementInfo(information);
+        super.setElementInfo(information);
 
-		aSelector.updatePanel(attributes);
-	}
+        aSelector.updatePanel(attributes);
+    }
 
-	public InterviewElementInformation getElementInfo()
-	{
+    public InterviewElementInformation getElementInfo() {
 
-		Integer[] filterIndex = null;
-		String filter = null;
+        Integer[] filterIndex = null;
+        String filter = null;
 
-		if (fSelector != null && fSelector.getFilterIndex() != null)
-		{
-			filterIndex = new Integer[fSelector.getFilterIndex().size()];
+        if (fSelector != null && fSelector.getFilterIndex() != null) {
+            filterIndex = new Integer[fSelector.getFilterIndex().size()];
 
-			filterIndex = fSelector.getFilterIndex().toArray(filterIndex);
-			filter = fSelector.getFilter();
-		}
+            filterIndex = fSelector.getFilterIndex().toArray(filterIndex);
+            filter = fSelector.getFilter();
+        }
 
-		MultiSelectionElementInformation elem = new MultiSelectionElementInformation(
-				nSelector.getName(), filter, filterIndex,
-				aSelector.getAttributesAndQuestions(), nSelector.getInfo(),
-				attributeOrder);
+        MultiSelectionElementInformation elem = new MultiSelectionElementInformation(
+                nSelector.getName(), filter, filterIndex,
+                aSelector.getAttributesAndQuestions(), nSelector.getInfo(),
+                attributeOrder);
 
-		String name = nSelector.getName();
-		if (name == null || name.equals(""))
-			name = getElementNameInTree();
-		elem.setElementName(name);
-		elem.setId(this.getId());
-		elem.setElementClass(this.getClass());
-		elem.createChildInformation(children);
+        String name = nSelector.getName();
+        if (name == null || name.equals(""))
+            name = getElementNameInTree();
+        elem.setElementName(name);
+        elem.setId(this.getId());
+        elem.setElementClass(this.getClass());
+        elem.createChildInformation(children);
 
-		if (parent != null)
-			elem.setParentInformation(parent);
+        if (parent != null)
+            elem.setParentInformation(parent);
 
-		return elem;
-	}
+        return elem;
+    }
 }

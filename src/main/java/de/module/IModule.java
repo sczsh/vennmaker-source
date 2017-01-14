@@ -1,24 +1,23 @@
 package de.module;
 
 /**
- * 
- * 
+ *
+ *
  */
-public interface IModule
-{
+public interface IModule {
 
 
-	@Override
-	public String toString();
+    @Override
+    public String toString();
 
-	public String getModuleName();
+    public String getModuleName();
 
-	public int getVersion();
+    public int getVersion();
 
-	public IModuleSave getConfig();
+    public IModuleSave getConfig();
 
-	public void setConfig(String configData);
+    public void setConfig(String configData);
 
-	public Object getConfigDialog();
+    public Object getConfigDialog();
 
 }

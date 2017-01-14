@@ -6,14 +6,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Setzt für einen Test-Case eine bestimmte Anzahl an durchläufen.
- * 
- * 
+ * Setzt fï¿½r einen Test-Case eine bestimmte Anzahl an durchlï¿½ufen.
  */
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface Repeat
-{
-	int value();
+public @interface Repeat {
+    int value();
 }

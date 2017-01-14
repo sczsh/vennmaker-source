@@ -1,22 +1,19 @@
 package painting;
 
-import java.awt.Color;
-import java.awt.Graphics;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public class BGImageLayer extends PaintLayer implements PaintLayerInterface
-{
-	private static final long	serialVersionUID	= 1L;
+public class BGImageLayer extends PaintLayer implements PaintLayerInterface {
+    private static final long serialVersionUID = 1L;
 
-	private Color					backgroundColor	= Color.white;
+    private Color backgroundColor = Color.white;
 
-	private BufferedImage		backgroundImage;
+    private BufferedImage backgroundImage;
 
-	@Override
-	public void paintComponent(final Graphics graphics)
-	{
-		this.setOpaque(true);
-		this.setBackground(backgroundColor);
-		super.paintComponent(graphics);
-	}
+    @Override
+    public void paintComponent(final Graphics graphics) {
+        this.setOpaque(true);
+        this.setBackground(backgroundColor);
+        super.paintComponent(graphics);
+    }
 }

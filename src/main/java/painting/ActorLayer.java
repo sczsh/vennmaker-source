@@ -1,6 +1,5 @@
 package painting;
 
-public class ActorLayer extends PaintLayer implements PaintLayerInterface
-{
+public class ActorLayer extends PaintLayer implements PaintLayerInterface {
 
 }

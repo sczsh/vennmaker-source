@@ -1,120 +1,110 @@
 package data;
 
-import java.io.File;
-
 import events.ComplexEvent;
 import events.MediaEvent;
 import files.VMPaths;
 
-public class Audiorecorder implements MediaListener
-{
+import java.io.File;
 
-	private boolean					status	= false;
+public class Audiorecorder implements MediaListener {
 
-	/**
-	 * Singleton: Referenz.
-	 */
-	private static Audiorecorder	instance;
+    private boolean status = false;
 
-	/**
-	 * Singleton: Zugriff.
-	 * 
-	 * @return Die einzige Audiorecorder-Instanz in diesem Prozess.
-	 */
-	public synchronized static Audiorecorder getInstance()
-	{
-		if (instance == null)
-		{
-			instance = new Audiorecorder();
+    /**
+     * Singleton: Referenz.
+     */
+    private static Audiorecorder instance;
 
-		}
-		return instance;
-	}
+    /**
+     * Singleton: Zugriff.
+     *
+     * @return Die einzige Audiorecorder-Instanz in diesem Prozess.
+     */
+    public synchronized static Audiorecorder getInstance() {
+        if (instance == null) {
+            instance = new Audiorecorder();
 
-	private Audiorecorder()
-	{
+        }
+        return instance;
+    }
 
-		MediaEventList.getInstance().addListener(this);
+    private Audiorecorder() {
 
-	}
-/**
- * Start the audio recording
- */
-	public void startRecording()
-	{
+        MediaEventList.getInstance().addListener(this);
 
-		File f = this.getAudiofilename();
-		if (f != null)
-		{
-			MediaEventList.getInstance().notify(
-					new MediaEvent(this, new MediaObject(MediaObject.STOP)));
+    }
 
-			MovieRecorder.getInstance(f);
-			this.status = true;
-		}
+    /**
+     * Start the audio recording
+     */
+    public void startRecording() {
 
-	}
-	
-	
-/**
- * Stop the audio recording
- */
-	public void stopRecording()
-	{
-		MediaEventList.getInstance().notify(
-				new MediaEvent(this, new MediaObject(MediaObject.STOP)));
-		this.status = false;
+        File f = this.getAudiofilename();
+        if (f != null) {
+            MediaEventList.getInstance().notify(
+                    new MediaEvent(this, new MediaObject(MediaObject.STOP)));
 
-	}
+            MovieRecorder.getInstance(f);
+            this.status = true;
+        }
 
-	/**
-	 * Check if audio recording is running true = running false = not running
-	 * 
-	 * @return true: runnging, false: not running
-	 */
-	public boolean isRunning()
-	{
-		return this.status;
-	}
+    }
 
-	private File getAudiofilename()
-	{
 
-		File file = null;
-		long freespace;
+    /**
+     * Stop the audio recording
+     */
+    public void stopRecording() {
+        MediaEventList.getInstance().notify(
+                new MediaEvent(this, new MediaObject(MediaObject.STOP)));
+        this.status = false;
 
-		ComplexEvent event = new ComplexEvent("AudioRecordStart"); //$NON-NLS-1$
-		EventProcessor.getInstance().fireEvent(event);
+    }
 
-		long audio_timestamp = EventProcessor.getInstance().getCurrentTimestamp();
+    /**
+     * Check if audio recording is running true = running false = not running
+     *
+     * @return true: runnging, false: not running
+     */
+    public boolean isRunning() {
+        return this.status;
+    }
 
-		file = new File(VMPaths.getCurrentWorkingDirectory()
-				+ "/audio/" + audio_timestamp + ".wav"); //$NON-NLS-1$ //$NON-NLS-2$
+    private File getAudiofilename() {
 
-		freespace = new File(VMPaths.getCurrentWorkingDirectory()
-				+ "/audio/").getUsableSpace(); //$NON-NLS-1$
+        File file = null;
+        long freespace;
 
-		//System.out.println("Avaiable space:" + (freespace) + "Byte (" //$NON-NLS-2$
-		//		+ (freespace / (1024 * 1024)) + " MB )"); //$NON-NLS-1$
+        ComplexEvent event = new ComplexEvent("AudioRecordStart"); //$NON-NLS-1$
+        EventProcessor.getInstance().fireEvent(event);
 
-		if (!file.exists())
-			return file;
+        long audio_timestamp = EventProcessor.getInstance().getCurrentTimestamp();
 
-		return null;
-	}
+        file = new File(VMPaths.getCurrentWorkingDirectory()
+                + "/audio/" + audio_timestamp + ".wav"); //$NON-NLS-1$ //$NON-NLS-2$
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see data.MediaListener#action(events.MediaEvent)
-	 */
-	@Override
-	public void action(MediaEvent e)
-	{
-		if (e.getInfo().getMessage().equals(MediaObject.STOP))
-		{
-			this.status = false;
-		}
+        freespace = new File(VMPaths.getCurrentWorkingDirectory()
+                + "/audio/").getUsableSpace(); //$NON-NLS-1$
 
-	}
+        //System.out.println("Avaiable space:" + (freespace) + "Byte (" //$NON-NLS-2$
+        //		+ (freespace / (1024 * 1024)) + " MB )"); //$NON-NLS-1$
+
+        if (!file.exists())
+            return file;
+
+        return null;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see data.MediaListener#action(events.MediaEvent)
+     */
+    @Override
+    public void action(MediaEvent e) {
+        if (e.getInfo().getMessage().equals(MediaObject.STOP)) {
+            this.status = false;
+        }
+
+    }
 }

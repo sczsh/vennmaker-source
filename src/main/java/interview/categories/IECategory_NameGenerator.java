@@ -1,8 +1,7 @@
 package interview.categories;
 
-import java.awt.Color;
+import java.awt.*;
 
-public interface IECategory_NameGenerator extends IECategory
-{
-	public static Color fontColor = Color.red;
+public interface IECategory_NameGenerator extends IECategory {
+    public static Color fontColor = Color.red;
 }

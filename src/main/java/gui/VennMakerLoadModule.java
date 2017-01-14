@@ -1,11 +1,9 @@
 /**
- * 
+ *
  */
 package gui;
 
 
+class VennMakerLoadModule {
 
-class VennMakerLoadModule
-{
-	
 }

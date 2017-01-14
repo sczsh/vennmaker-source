@@ -1,346 +1,293 @@
 package data;
 
-import interview.elements.InterviewElement;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.RandomAccessFile;
-import java.util.Vector;
-
-import wizards.VennMakerWizard;
-
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.ConversionException;
+import interview.elements.InterviewElement;
+import wizards.VennMakerWizard;
+
+import java.io.*;
+import java.util.Vector;
 
 /**
  * Ein Config-Objekt beschreibt eine vorkonfigurierte Umgebung, die im
  * Kiosk-Modus genutzt wird.
- * 
+ * <p>
  * Enthalten ist das initial zu ladende Netzwerk, ein zu startender Wizard sowie
  * verschiedene Eigenschaften die die Programmoberfläche verändern/einschränken.
- * 
+ * <p>
  * Methoden zum Speichern und öffnen in/aus einer XML-Datei sind vorhanden.
- * 
  */
-public class Config
-{
-	/**
-	 * Ein Wrapper für die Möglichkeiten, doppelte Akteure geeignet zu behandeln.
-	 * 
-	 * 
-	 */
-	public enum DuplicateBehaviour
-	{
-		NOT_ALLOWED("Not allowed"), ALLOWED("Allowed"), ASK_USER("Ask");
-		public String toString()
-		{
-			return name;
-		}
+public class Config {
+    /**
+     * Ein Wrapper für die Möglichkeiten, doppelte Akteure geeignet zu behandeln.
+     */
+    public enum DuplicateBehaviour {
+        NOT_ALLOWED("Not allowed"), ALLOWED("Allowed"), ASK_USER("Ask");
 
-		private String	name;
+        public String toString() {
+            return name;
+        }
 
-		private DuplicateBehaviour(String name)
-		{
-			this.name = name;
-		}
-	}
+        private String name;
 
-	/**
-	 * Ein Wrapper für die Möglichkeiten, die Labels zu platzieren.
-	 * 
-	 * 
-	 */
-	public enum LabelBehaviour
-	{
-		ASIDE("right"), ASIDE_LEFT("left"), ON_TOP("over"), NO_LABEL("no label"), UNDER("under"), NUMBER(
-				"number");
-		final private String	label;
+        private DuplicateBehaviour(String name) {
+            this.name = name;
+        }
+    }
 
-		public String getLabel()
-		{
-			return label;
-		}
+    /**
+     * Ein Wrapper für die Möglichkeiten, die Labels zu platzieren.
+     */
+    public enum LabelBehaviour {
+        ASIDE("right"), ASIDE_LEFT("left"), ON_TOP("over"), NO_LABEL("no label"), UNDER("under"), NUMBER(
+                "number");
+        final private String label;
 
-		private LabelBehaviour(final String s)
-		{
-			this.label = s;
-		}
-	}
+        public String getLabel() {
+            return label;
+        }
 
-	/**
-	 * Enthält eine Liste aller Wizards, diese werden im Interview nacheinander
-	 * in der gegebenen Reihenfolge gestartet.
-	 * 
-	 * @deprecated
-	 */
-	private Vector<VennMakerWizard>	wizards;
-	
-	/**
-	 * Das Root-Element des Interviews.
-	 */
-	private InterviewElement interviewElementRoot;
-	
-	/**
-	 * Liste der bereits besuchten InterviewElements für die Zurück-Funktion.
-	 */
-	private Vector<InterviewElement> interviewElementsFinished = new Vector<InterviewElement>();
+        private LabelBehaviour(final String s) {
+            this.label = s;
+        }
+    }
 
-	/**
-	 * Enthält eine Liste aller Fragen, die zu, gegebenen zeitpunkt vom
-	 * QuestionController gestellt werden.
-	 */
-	private Vector<Question>			questions;
+    /**
+     * Enthält eine Liste aller Wizards, diese werden im Interview nacheinander
+     * in der gegebenen Reihenfolge gestartet.
+     *
+     * @deprecated
+     */
+    private Vector<VennMakerWizard> wizards;
 
-	private boolean						egoDisabled				= false;
+    /**
+     * Das Root-Element des Interviews.
+     */
+    private InterviewElement interviewElementRoot;
 
-	private boolean						egoMoveable				= false;
+    /**
+     * Liste der bereits besuchten InterviewElements für die Zurück-Funktion.
+     */
+    private Vector<InterviewElement> interviewElementsFinished = new Vector<InterviewElement>();
 
-	private boolean						egoResizable			= true;
+    /**
+     * Enthält eine Liste aller Fragen, die zu, gegebenen zeitpunkt vom
+     * QuestionController gestellt werden.
+     */
+    private Vector<Question> questions;
 
-	private DuplicateBehaviour			duplicateBehaviour	= DuplicateBehaviour.ASK_USER;
+    private boolean egoDisabled = false;
 
-	private LabelBehaviour				labelBehaviour			= LabelBehaviour.UNDER;
+    private boolean egoMoveable = false;
 
-	private static XStream				xstream					= new XStream();
+    private boolean egoResizable = true;
 
-	private static void initXStream()
-	{
-		xstream.alias("config", data.Config.class); //$NON-NLS-1$
-		xstream.addImplicitCollection(Projekt.class, "netzwerke"); //$NON-NLS-1$
-		xstream.alias("netzwerk", data.Netzwerk.class); //$NON-NLS-1$
-		xstream.alias("akteur", data.Akteur.class); //$NON-NLS-1$
-		xstream.alias("akteurTyp", data.AkteurTyp.class); //$NON-NLS-1$
-		xstream.alias("relation", data.Relation.class); //$NON-NLS-1$
-		xstream.alias("AkteurTyp", data.AkteurTyp.class); //$NON-NLS-1$
-		xstream.useAttributeFor(data.Akteur.class, "id"); //$NON-NLS-1$
-		xstream.omitField(data.Akteur.class, "view"); //$NON-NLS-1$
-		xstream.setMode(XStream.XPATH_ABSOLUTE_REFERENCES);
-	}
+    private DuplicateBehaviour duplicateBehaviour = DuplicateBehaviour.ASK_USER;
 
-	public Config()
-	{
-		initXStream();
-		wizards = new Vector<VennMakerWizard>();
-		questions = new Vector<Question>();
-	}
+    private LabelBehaviour labelBehaviour = LabelBehaviour.UNDER;
 
-	private String toXml()
-	{
-		String xml = "<?xml version=\"1.0\"?>\n" + xstream.toXML(this); //$NON-NLS-1$
-		return xml;
-	}
+    private static XStream xstream = new XStream();
 
-	/**
-	 * Speichert die Konfiguration in einer <code>.vennEn</code> Datei ab.
-	 * 
-	 * @param fileName
-	 *           Dateiname wo gespeichert wird.
-	 * @return <code>true</code> wenn das Speichern erfolgreich war, sonst
-	 *         <code>false</code>.
-	 */
-	public boolean save(String fileName)
-	{
-		try
-		{
-			FileOutputStream fos = new FileOutputStream(fileName);
-			PrintWriter fw = new PrintWriter(new OutputStreamWriter(fos, "UTF-8"), //$NON-NLS-1$
-					true);
-			fw.write(toXml());
-			fw.close();
-			
-			RandomAccessFile writtenFile = new RandomAccessFile(new File(fileName), "r");
-			
-			byte[] read = new byte[11];
-			writtenFile.getChannel().position(writtenFile.length() - 10);
-			
-			writtenFile.read(read, 0, 10);
+    private static void initXStream() {
+        xstream.alias("config", data.Config.class); //$NON-NLS-1$
+        xstream.addImplicitCollection(Projekt.class, "netzwerke"); //$NON-NLS-1$
+        xstream.alias("netzwerk", data.Netzwerk.class); //$NON-NLS-1$
+        xstream.alias("akteur", data.Akteur.class); //$NON-NLS-1$
+        xstream.alias("akteurTyp", data.AkteurTyp.class); //$NON-NLS-1$
+        xstream.alias("relation", data.Relation.class); //$NON-NLS-1$
+        xstream.alias("AkteurTyp", data.AkteurTyp.class); //$NON-NLS-1$
+        xstream.useAttributeFor(data.Akteur.class, "id"); //$NON-NLS-1$
+        xstream.omitField(data.Akteur.class, "view"); //$NON-NLS-1$
+        xstream.setMode(XStream.XPATH_ABSOLUTE_REFERENCES);
+    }
 
-			writtenFile.close();
-			
-			if (new String(read).trim().equals(
-					"</" + Config.class.getSimpleName().toLowerCase() + ">"))
-				return true;
-			else
-				return false;
-			
-		} catch (Exception e)
-		{
-			return false;
-		}
-	}
+    public Config() {
+        initXStream();
+        wizards = new Vector<VennMakerWizard>();
+        questions = new Vector<Question>();
+    }
 
-	/**
-	 * Lädt eine <code>.vennEn</code>-Datei an der angegebenen Position. Außerdem
-	 * werden benötigte Registrierungen am <code>EventProcessor</code>
-	 * vorgenommen.
-	 * 
-	 * @param fileName
-	 *           Die zu öffnende Datei.
-	 * @return Eine gültige Konfiguration.
-	 * @throws FileNotFoundException
-	 *            wenn die Datei nicht gefunden wurde.
-	 * @throws IOException
-	 *            wenn die Datei nicht geöffnet werden könnte.
-	 */
-	public static Config load(String fileName) throws FileNotFoundException,
-			IOException, ConversionException
-	{
-		initXStream();
-		FileInputStream is = new FileInputStream(fileName);
-		Config p = (Config) xstream.fromXML(is);
-		is.close();
+    private String toXml() {
+        String xml = "<?xml version=\"1.0\"?>\n" + xstream.toXML(this); //$NON-NLS-1$
+        return xml;
+    }
 
-		return p;
-	}
+    /**
+     * Speichert die Konfiguration in einer <code>.vennEn</code> Datei ab.
+     *
+     * @param fileName Dateiname wo gespeichert wird.
+     * @return <code>true</code> wenn das Speichern erfolgreich war, sonst
+     * <code>false</code>.
+     */
+    public boolean save(String fileName) {
+        try {
+            FileOutputStream fos = new FileOutputStream(fileName);
+            PrintWriter fw = new PrintWriter(new OutputStreamWriter(fos, "UTF-8"), //$NON-NLS-1$
+                    true);
+            fw.write(toXml());
+            fw.close();
 
-	/**
-	 * Gibt die Liste der Wizards zurück
-	 * 
-	 * @return Liste der Wizards
-	 */
-	public Vector<VennMakerWizard> getWizards()
-	{
-		return wizards;
-	}
+            RandomAccessFile writtenFile = new RandomAccessFile(new File(fileName), "r");
 
-	/**
-	 * Setzt die Liste der Wizards.
-	 * 
-	 * @param wizards
-	 *           Liste der Wizards
-	 */
-	public void setWizards(Vector<VennMakerWizard> wizards)
-	{
-		this.wizards = wizards;
-	}
+            byte[] read = new byte[11];
+            writtenFile.getChannel().position(writtenFile.length() - 10);
 
-	/**
-	 * Gibt die Liste der Wizards zurück
-	 * 
-	 * @return Liste der Wizards
-	 */
-	public Vector<Question> getQuestions()
-	{
-		return questions;
-	}
+            writtenFile.read(read, 0, 10);
 
-	/**
-	 * Setzt die Liste der Fragen.
-	 * 
-	 * @param questions
-	 *           Liste der Fragen
-	 */
-	public void setQuestions(Vector<Question> questions)
-	{
-		this.questions = questions;
-	}
+            writtenFile.close();
 
-	/**
-	 * @return the duplicateBehaviour
-	 */
-	public final DuplicateBehaviour getDuplicateBehaviour()
-	{
-		return duplicateBehaviour;
-	}
+            if (new String(read).trim().equals(
+                    "</" + Config.class.getSimpleName().toLowerCase() + ">"))
+                return true;
+            else
+                return false;
 
-	/**
-	 * @param duplicateBehaviour
-	 *           the duplicateBehaviour to set
-	 */
-	public final void setDuplicateBehaviour(DuplicateBehaviour duplicateBehaviour)
-	{
-		this.duplicateBehaviour = duplicateBehaviour;
-	}
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
-	/**
-	 * @return the labelBehaviour
-	 */
-	public final LabelBehaviour getLabelBehaviour()
-	{
-		if (this.labelBehaviour == null)
-			labelBehaviour = LabelBehaviour.UNDER;
-		return labelBehaviour;
-	}
+    /**
+     * Lädt eine <code>.vennEn</code>-Datei an der angegebenen Position. Außerdem
+     * werden benötigte Registrierungen am <code>EventProcessor</code>
+     * vorgenommen.
+     *
+     * @param fileName Die zu öffnende Datei.
+     * @return Eine gültige Konfiguration.
+     * @throws FileNotFoundException wenn die Datei nicht gefunden wurde.
+     * @throws IOException           wenn die Datei nicht geöffnet werden könnte.
+     */
+    public static Config load(String fileName) throws FileNotFoundException,
+            IOException, ConversionException {
+        initXStream();
+        FileInputStream is = new FileInputStream(fileName);
+        Config p = (Config) xstream.fromXML(is);
+        is.close();
 
-	/**
-	 * @param labelBehaviour
-	 *           the labelBehaviour to set
-	 */
-	public final void setLabelBehaviour(LabelBehaviour labelBehaviour)
-	{
-		this.labelBehaviour = labelBehaviour;
-	}
+        return p;
+    }
 
-	/**
-	 * @return the egoDisabled
-	 */
-	public boolean isEgoDisabled()
-	{
-		return egoDisabled;
-	}
+    /**
+     * Gibt die Liste der Wizards zurück
+     *
+     * @return Liste der Wizards
+     */
+    public Vector<VennMakerWizard> getWizards() {
+        return wizards;
+    }
 
-	/**
-	 * @param egoDisabled
-	 *           the egoDisabled to set
-	 */
-	public void setEgoDisabled(boolean egoDisabled)
-	{
-		this.egoDisabled = egoDisabled;
-	}
+    /**
+     * Setzt die Liste der Wizards.
+     *
+     * @param wizards Liste der Wizards
+     */
+    public void setWizards(Vector<VennMakerWizard> wizards) {
+        this.wizards = wizards;
+    }
 
-	/**
-	 * @return the egoResizable
-	 */
-	public boolean isEgoMoveable()
-	{
-		return egoMoveable;
-	}
+    /**
+     * Gibt die Liste der Wizards zurück
+     *
+     * @return Liste der Wizards
+     */
+    public Vector<Question> getQuestions() {
+        return questions;
+    }
 
-	/**
-	 * Set ego as moveable
-	 * @param egoMoveable true / false
-	 * 
-	 */
-	public void setEgoMoveable(boolean egoMoveable)
-	{
-		this.egoMoveable = egoMoveable;
-	}
+    /**
+     * Setzt die Liste der Fragen.
+     *
+     * @param questions Liste der Fragen
+     */
+    public void setQuestions(Vector<Question> questions) {
+        this.questions = questions;
+    }
 
-	/**
-	 * @return the egoResizable
-	 */
-	public boolean isEgoResizable()
-	{
-		return egoResizable;
-	}
+    /**
+     * @return the duplicateBehaviour
+     */
+    public final DuplicateBehaviour getDuplicateBehaviour() {
+        return duplicateBehaviour;
+    }
 
-	/**
-	 * @param egoResizable
-	 *           the egoResizable to set
-	 */
-	public void setEgoResizable(boolean egoResizable)
-	{
-		this.egoResizable = egoResizable;
-	}
+    /**
+     * @param duplicateBehaviour the duplicateBehaviour to set
+     */
+    public final void setDuplicateBehaviour(DuplicateBehaviour duplicateBehaviour) {
+        this.duplicateBehaviour = duplicateBehaviour;
+    }
 
-	/**
-	 * Seitenverhältnis der Zeichenfläche (Breite/Höhe)
-	 */
-	private float	viewAreaRatio	= 1.33f;
+    /**
+     * @return the labelBehaviour
+     */
+    public final LabelBehaviour getLabelBehaviour() {
+        if (this.labelBehaviour == null)
+            labelBehaviour = LabelBehaviour.UNDER;
+        return labelBehaviour;
+    }
 
-	public float getViewAreaRatio()
-	{
-		return viewAreaRatio;
-	}
+    /**
+     * @param labelBehaviour the labelBehaviour to set
+     */
+    public final void setLabelBehaviour(LabelBehaviour labelBehaviour) {
+        this.labelBehaviour = labelBehaviour;
+    }
 
-	public void setViewAreaRatio(float viewAreaRatio)
-	{
-		this.viewAreaRatio = viewAreaRatio;
-	}
+    /**
+     * @return the egoDisabled
+     */
+    public boolean isEgoDisabled() {
+        return egoDisabled;
+    }
+
+    /**
+     * @param egoDisabled the egoDisabled to set
+     */
+    public void setEgoDisabled(boolean egoDisabled) {
+        this.egoDisabled = egoDisabled;
+    }
+
+    /**
+     * @return the egoResizable
+     */
+    public boolean isEgoMoveable() {
+        return egoMoveable;
+    }
+
+    /**
+     * Set ego as moveable
+     *
+     * @param egoMoveable true / false
+     */
+    public void setEgoMoveable(boolean egoMoveable) {
+        this.egoMoveable = egoMoveable;
+    }
+
+    /**
+     * @return the egoResizable
+     */
+    public boolean isEgoResizable() {
+        return egoResizable;
+    }
+
+    /**
+     * @param egoResizable the egoResizable to set
+     */
+    public void setEgoResizable(boolean egoResizable) {
+        this.egoResizable = egoResizable;
+    }
+
+    /**
+     * Seitenverhältnis der Zeichenfläche (Breite/Höhe)
+     */
+    private float viewAreaRatio = 1.33f;
+
+    public float getViewAreaRatio() {
+        return viewAreaRatio;
+    }
+
+    public void setViewAreaRatio(float viewAreaRatio) {
+        this.viewAreaRatio = viewAreaRatio;
+    }
 
 }

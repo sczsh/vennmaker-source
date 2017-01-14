@@ -1,34 +1,32 @@
 package gui.configdialog;
 
-import java.awt.Color;
+import java.awt.*;
 import java.io.Serializable;
 
 /**
  * Diese Klasse kapselt informationen ueber die einzelnen Sektoren (farbe,
  * name, etc.).
- * 
  */
-public class FakeSectorInfo implements Serializable
-{
-	private static final long	serialVersionUID	= 1L;
+public class FakeSectorInfo implements Serializable {
+    private static final long serialVersionUID = 1L;
 
-	/**
-	 * Die Farbe des Sektors
-	 */
-	public Color	sectorColor;
+    /**
+     * Die Farbe des Sektors
+     */
+    public Color sectorColor;
 
-	/**
-	 * Die Beschriftung des Sektors
-	 */
-	public String	label;
+    /**
+     * Die Beschriftung des Sektors
+     */
+    public String label;
 
-	/**
-	 * Die Breite des Sektors (Prozent eines Kreises 0..1)
-	 */
-	public double	width;
+    /**
+     * Die Breite des Sektors (Prozent eines Kreises 0..1)
+     */
+    public double width;
 
-	/**
-	 * Abstand zum Nullpunkt (waagerecht) in Grad
-	 */
-	public double	off;
+    /**
+     * Abstand zum Nullpunkt (waagerecht) in Grad
+     */
+    public double off;
 }

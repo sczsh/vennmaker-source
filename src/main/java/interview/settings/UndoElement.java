@@ -1,6 +1,5 @@
 package interview.settings;
 
-public interface UndoElement
-{
-	public boolean undo();
+public interface UndoElement {
+    public boolean undo();
 }

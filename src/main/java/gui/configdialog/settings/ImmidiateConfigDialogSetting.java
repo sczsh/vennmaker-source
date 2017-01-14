@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package gui.configdialog.settings;
 
@@ -8,13 +8,10 @@ package gui.configdialog.settings;
  * Somit braucht dieses Setting nicht nur {@code set()} zum ausfuehren</br>
  * sondern auch {@code undo()} zum rueckgaengig machen, wenn der User</br>
  * die Session im ConfigDialog mit "Cancel" abbricht.
- * 
- * 
  */
-public interface ImmidiateConfigDialogSetting extends ConfigDialogSetting
-{
-	/**
-	 * reverts all changes done by {@code set()}
-	 */
-	public void undo();
+public interface ImmidiateConfigDialogSetting extends ConfigDialogSetting {
+    /**
+     * reverts all changes done by {@code set()}
+     */
+    public void undo();
 }

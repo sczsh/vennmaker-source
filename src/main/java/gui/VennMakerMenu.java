@@ -1,20 +1,5 @@
 package gui;
 
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-
-import org.jvnet.flamingo.common.icon.ResizableIcon;
-import org.jvnet.flamingo.svg.SvgBatikResizableIcon;
-
 import data.Audiorecorder;
 import data.MenuEventList;
 import data.MenuListener;
@@ -22,614 +7,597 @@ import data.MenuObject;
 import events.MenuEvent;
 import files.FileOperations;
 import files.VMPaths;
+import org.jvnet.flamingo.common.icon.ResizableIcon;
+import org.jvnet.flamingo.svg.SvgBatikResizableIcon;
 
-public class VennMakerMenu implements ActionListener, ItemListener, MenuListener
-{
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 
-	/**
-	 * Constant returned by saveRoutine() if saving was successfull
-	 */
-	public static final int	SAVED			= 1;
+public class VennMakerMenu implements ActionListener, ItemListener, MenuListener {
 
-	/**
-	 * Constant returned by saveRoutine() if saving was canceld;
-	 */
-	public static final int	CANCELD		= 0;
+    /**
+     * Constant returned by saveRoutine() if saving was successfull
+     */
+    public static final int SAVED = 1;
 
-	/**
-	 * Constant returned by saveRoutine() if saving was unsuccessfull
-	 */
-	public static final int	SAVE_FAILED	= -1;
+    /**
+     * Constant returned by saveRoutine() if saving was canceld;
+     */
+    public static final int CANCELD = 0;
 
-	private JMenuItem			audiorecordAnalyse;
+    /**
+     * Constant returned by saveRoutine() if saving was unsuccessfull
+     */
+    public static final int SAVE_FAILED = -1;
 
-	private JMenuItem			activatefilter;
-	
+    private JMenuItem audiorecordAnalyse;
 
-	public JMenuBar createVennMakerMenu() throws FileNotFoundException
-	{
-		ResizableIcon icon;
-		JMenuBar menuBar;
-		JMenu menu;
-		JMenu menuEntry;
+    private JMenuItem activatefilter;
 
-		MenuEventList.getInstance().addListener(this); //spaeter wieder entfernen!
 
-		// Create the menu bar.
-		menuBar = new JMenuBar();
+    public JMenuBar createVennMakerMenu() throws FileNotFoundException {
+        ResizableIcon icon;
+        JMenuBar menuBar;
+        JMenu menu;
+        JMenu menuEntry;
 
-		// ---- File------------------------------------------------
-		
-	 	menu = new JMenu(Messages.getString("VennMaker.MenuFile"));
-		menuBar.add(menu);
-		// -------New--------
+        MenuEventList.getInstance().addListener(this); //spaeter wieder entfernen!
 
-		icon = SvgBatikResizableIcon
-				.getSvgIcon(
-						new FileInputStream(FileOperations.getAbsolutePath(Messages
-								.getString("VennMaker.Icons_DocNew"))), new Dimension(16, 16)); //$NON-NLS-1$
+        // Create the menu bar.
+        menuBar = new JMenuBar();
 
-		JMenuItem newProject = new JMenuItem(
-				Messages.getString("VennMaker.MenuFileNew"), icon); //$NON-NLS-1$
+        // ---- File------------------------------------------------
 
-		newProject.setActionCommand("newproject");
-		newProject.addActionListener(this);
-		menu.add(newProject);
+        menu = new JMenu(Messages.getString("VennMaker.MenuFile"));
+        menuBar.add(menu);
+        // -------New--------
 
-		// -------Open--------
+        icon = SvgBatikResizableIcon
+                .getSvgIcon(
+                        new FileInputStream(FileOperations.getAbsolutePath(Messages
+                                .getString("VennMaker.Icons_DocNew"))), new Dimension(16, 16)); //$NON-NLS-1$
 
-		menuEntry = new JMenu(Messages.getString("VennMaker.MenuFileOpen"));
+        JMenuItem newProject = new JMenuItem(
+                Messages.getString("VennMaker.MenuFileNew"), icon); //$NON-NLS-1$
 
-		icon = SvgBatikResizableIcon
-				.getSvgIcon(
-						new FileInputStream(FileOperations.getAbsolutePath(Messages
-								.getString("VennMaker.Icons_DocOpen"))), new Dimension(16, 16)); //$NON-NLS-1$
+        newProject.setActionCommand("newproject");
+        newProject.addActionListener(this);
+        menu.add(newProject);
 
-		JMenuItem currentProject = new JMenuItem(
-				Messages.getString("VennMaker.OpenFromCurrentProject"), icon); //$NON-NLS-1$
+        // -------Open--------
 
-		JMenuItem otherProject = new JMenuItem(
-				Messages.getString("VennMaker.OpenFromOtherProject"), icon); //$NON-NLS-1$
+        menuEntry = new JMenu(Messages.getString("VennMaker.MenuFileOpen"));
 
-		String tmp = VMPaths.VENNMAKER_TEMPDIR
-				+ "projects" + VMPaths.SEPARATOR + "temp" + VMPaths.SEPARATOR; //$NON-NLS-1$ //$NON-NLS-2$
+        icon = SvgBatikResizableIcon
+                .getSvgIcon(
+                        new FileInputStream(FileOperations.getAbsolutePath(Messages
+                                .getString("VennMaker.Icons_DocOpen"))), new Dimension(16, 16)); //$NON-NLS-1$
 
-		if (!(tmp.equals(VMPaths.getCurrentWorkingDirectory())))
-		{
-			currentProject.setActionCommand("opencurrentproject");
-			currentProject.addActionListener(this);
+        JMenuItem currentProject = new JMenuItem(
+                Messages.getString("VennMaker.OpenFromCurrentProject"), icon); //$NON-NLS-1$
 
-			menuEntry.add(currentProject);
-		}
+        JMenuItem otherProject = new JMenuItem(
+                Messages.getString("VennMaker.OpenFromOtherProject"), icon); //$NON-NLS-1$
 
-		otherProject.setActionCommand("openotherproject");
-		otherProject.addActionListener(this);
-		menuEntry.add(otherProject);
+        String tmp = VMPaths.VENNMAKER_TEMPDIR
+                + "projects" + VMPaths.SEPARATOR + "temp" + VMPaths.SEPARATOR; //$NON-NLS-1$ //$NON-NLS-2$
 
-		menu.add(menuEntry);
+        if (!(tmp.equals(VMPaths.getCurrentWorkingDirectory()))) {
+            currentProject.setActionCommand("opencurrentproject");
+            currentProject.addActionListener(this);
 
-		// -------Save--------
+            menuEntry.add(currentProject);
+        }
 
-		icon = SvgBatikResizableIcon
-				.getSvgIcon(
-						new FileInputStream(FileOperations.getAbsolutePath(Messages
-								.getString("VennMaker.Icons_DocSave"))), new Dimension(16, 16)); //$NON-NLS-1$
+        otherProject.setActionCommand("openotherproject");
+        otherProject.addActionListener(this);
+        menuEntry.add(otherProject);
 
-		JMenuItem saveProject = new JMenuItem(
-				Messages.getString("VennMaker.MenuFileSave"), icon); //$NON-NLS-1$
+        menu.add(menuEntry);
 
-		saveProject.setActionCommand("saveproject");
-		saveProject.addActionListener(this);
-		menu.add(saveProject);
+        // -------Save--------
 
-		// -------Save as--------
+        icon = SvgBatikResizableIcon
+                .getSvgIcon(
+                        new FileInputStream(FileOperations.getAbsolutePath(Messages
+                                .getString("VennMaker.Icons_DocSave"))), new Dimension(16, 16)); //$NON-NLS-1$
 
-		icon = SvgBatikResizableIcon
-				.getSvgIcon(
-						new FileInputStream(FileOperations.getAbsolutePath(Messages
-								.getString("VennMaker.Icons_DocSaveAs"))), new Dimension(16, 16)); //$NON-NLS-1$
+        JMenuItem saveProject = new JMenuItem(
+                Messages.getString("VennMaker.MenuFileSave"), icon); //$NON-NLS-1$
 
-		JMenuItem saveAsProject = new JMenuItem(
-				Messages.getString("VennMaker.MenuFileSaveas"), icon); //$NON-NLS-1$
+        saveProject.setActionCommand("saveproject");
+        saveProject.addActionListener(this);
+        menu.add(saveProject);
 
-		saveAsProject.setActionCommand("saveasproject");
-		saveAsProject.addActionListener(this);
-		menu.add(saveAsProject);
-		
-		
-		// --------Export -----------------------------
+        // -------Save as--------
 
-		menuEntry = new JMenu(Messages.getString("VennMaker.MenuFileExport"));
+        icon = SvgBatikResizableIcon
+                .getSvgIcon(
+                        new FileInputStream(FileOperations.getAbsolutePath(Messages
+                                .getString("VennMaker.Icons_DocSaveAs"))), new Dimension(16, 16)); //$NON-NLS-1$
 
-		// -------Export Image--------
-		icon = SvgBatikResizableIcon
-				.getSvgIcon(
-						new FileInputStream(FileOperations.getAbsolutePath(Messages
-								.getString("VennMaker.Export_Drawing"))), new Dimension(16, 16)); //$NON-NLS-1$
+        JMenuItem saveAsProject = new JMenuItem(
+                Messages.getString("VennMaker.MenuFileSaveas"), icon); //$NON-NLS-1$
 
-		JMenuItem exportimage = new JMenuItem(
-				Messages.getString("VennMaker.Image"), icon); //$NON-NLS-1$
+        saveAsProject.setActionCommand("saveasproject");
+        saveAsProject.addActionListener(this);
+        menu.add(saveAsProject);
 
-		exportimage.setActionCommand("exportimage");
-		exportimage.addActionListener(this);
-		menuEntry.add(exportimage);
 
-		// -------Export Data--------
-		icon = SvgBatikResizableIcon
-				.getSvgIcon(
-						new FileInputStream(FileOperations.getAbsolutePath(Messages
-								.getString("VennMaker.Export_Spreadsheet"))), new Dimension(16, 16)); //$NON-NLS-1$
+        // --------Export -----------------------------
 
-		JMenuItem exportdata = new JMenuItem(
-				Messages.getString("VennMaker.Actor_Data"), icon); //$NON-NLS-1$
+        menuEntry = new JMenu(Messages.getString("VennMaker.MenuFileExport"));
 
-		exportdata.setActionCommand("exportdata");
-		exportdata.addActionListener(this);
-		menuEntry.add(exportdata);
+        // -------Export Image--------
+        icon = SvgBatikResizableIcon
+                .getSvgIcon(
+                        new FileInputStream(FileOperations.getAbsolutePath(Messages
+                                .getString("VennMaker.Export_Drawing"))), new Dimension(16, 16)); //$NON-NLS-1$
 
-		// -------Export Audio--------
-		icon = SvgBatikResizableIcon
-				.getSvgIcon(
-						new FileInputStream(FileOperations.getAbsolutePath(Messages
-								.getString("VennMaker.Export_Audio"))), new Dimension(16, 16)); //$NON-NLS-1$
+        JMenuItem exportimage = new JMenuItem(
+                Messages.getString("VennMaker.Image"), icon); //$NON-NLS-1$
 
-		JMenuItem exportaudio = new JMenuItem(
-				Messages.getString("VennMaker.Audio_Data"), icon); //$NON-NLS-1$
+        exportimage.setActionCommand("exportimage");
+        exportimage.addActionListener(this);
+        menuEntry.add(exportimage);
 
-		exportaudio.setActionCommand("exportaudio");
-		exportaudio.addActionListener(this);
-		menuEntry.add(exportaudio);
+        // -------Export Data--------
+        icon = SvgBatikResizableIcon
+                .getSvgIcon(
+                        new FileInputStream(FileOperations.getAbsolutePath(Messages
+                                .getString("VennMaker.Export_Spreadsheet"))), new Dimension(16, 16)); //$NON-NLS-1$
 
-		// -------------------------------------------
+        JMenuItem exportdata = new JMenuItem(
+                Messages.getString("VennMaker.Actor_Data"), icon); //$NON-NLS-1$
 
-		menu.add(menuEntry);
+        exportdata.setActionCommand("exportdata");
+        exportdata.addActionListener(this);
+        menuEntry.add(exportdata);
 
+        // -------Export Audio--------
+        icon = SvgBatikResizableIcon
+                .getSvgIcon(
+                        new FileInputStream(FileOperations.getAbsolutePath(Messages
+                                .getString("VennMaker.Export_Audio"))), new Dimension(16, 16)); //$NON-NLS-1$
 
-		// -------Print--------
+        JMenuItem exportaudio = new JMenuItem(
+                Messages.getString("VennMaker.Audio_Data"), icon); //$NON-NLS-1$
 
-		icon = SvgBatikResizableIcon
-				.getSvgIcon(
-						new FileInputStream(FileOperations.getAbsolutePath(Messages
-								.getString("VennMaker.Icons_DocPrint"))), new Dimension(16, 16)); //$NON-NLS-1$
+        exportaudio.setActionCommand("exportaudio");
+        exportaudio.addActionListener(this);
+        menuEntry.add(exportaudio);
 
-		JMenuItem printProject = new JMenuItem(
-				Messages.getString("VennMaker.MenuFilePrint"), icon); //$NON-NLS-1$
+        // -------------------------------------------
 
-		printProject.setActionCommand("printproject");
-		printProject.addActionListener(this);
-		menu.add(printProject);
+        menu.add(menuEntry);
 
 
-		// -------vennmaker quit--------
+        // -------Print--------
 
-		JMenuItem closeProject = new JMenuItem(
-				Messages.getString("VennMaker.MenuExit")); //$NON-NLS-1$
+        icon = SvgBatikResizableIcon
+                .getSvgIcon(
+                        new FileInputStream(FileOperations.getAbsolutePath(Messages
+                                .getString("VennMaker.Icons_DocPrint"))), new Dimension(16, 16)); //$NON-NLS-1$
 
-		closeProject.setActionCommand("exitproject");
-		closeProject.addActionListener(this);
-		menu.add(closeProject);
-		
-		// --------Edit -------------------------------------------------------------------------
-		menu = new JMenu(Messages.getString("VennMaker.MenuEdit"));
-		menuBar.add(menu);
+        JMenuItem printProject = new JMenuItem(
+                Messages.getString("VennMaker.MenuFilePrint"), icon); //$NON-NLS-1$
 
-		
-	
+        printProject.setActionCommand("printproject");
+        printProject.addActionListener(this);
+        menu.add(printProject);
 
-		// -------data protection--------
 
-		icon = SvgBatikResizableIcon
-				.getSvgIcon(
-						new FileInputStream(FileOperations
-								.getAbsolutePath("./icons/intern/key.svg")), new Dimension(16, 16)); //$NON-NLS-1$
+        // -------vennmaker quit--------
 
-		JMenuItem protectionProject = new JMenuItem(
-				Messages.getString("EditDataProtection.4"), icon); //$NON-NLS-1$
+        JMenuItem closeProject = new JMenuItem(
+                Messages.getString("VennMaker.MenuExit")); //$NON-NLS-1$
 
-		protectionProject.setActionCommand("protectionproject");
-		protectionProject.addActionListener(this);
-		menu.add(protectionProject);
+        closeProject.setActionCommand("exitproject");
+        closeProject.addActionListener(this);
+        menu.add(closeProject);
 
-		// -------Add network map--------
+        // --------Edit -------------------------------------------------------------------------
+        menu = new JMenu(Messages.getString("VennMaker.MenuEdit"));
+        menuBar.add(menu);
 
-		menuEntry = new JMenu(Messages.getString("VennMaker.Network_Add"));
 
-		icon = SvgBatikResizableIcon
-				.getSvgIcon(
-						new FileInputStream(FileOperations.getAbsolutePath(Messages
-								.getString("VennMaker.Icons_NewWindow"))), new Dimension(16, 16)); //$NON-NLS-1$
+        // -------data protection--------
 
-		JMenuItem addnewmap = new JMenuItem(
-				Messages.getString("VennMaker.Network_AddEmpty"), icon); //$NON-NLS-1$
-		addnewmap.setActionCommand("addnewmap");
-		addnewmap.addActionListener(this);
+        icon = SvgBatikResizableIcon
+                .getSvgIcon(
+                        new FileInputStream(FileOperations
+                                .getAbsolutePath("./icons/intern/key.svg")), new Dimension(16, 16)); //$NON-NLS-1$
 
-		menuEntry.add(addnewmap);
+        JMenuItem protectionProject = new JMenuItem(
+                Messages.getString("EditDataProtection.4"), icon); //$NON-NLS-1$
 
-		JMenuItem clonemap = new JMenuItem(
-				Messages.getString("VennMaker.Network_Clone"), icon); //$NON-NLS-1$
-		clonemap.setActionCommand("clonemap");
-		clonemap.addActionListener(this);
+        protectionProject.setActionCommand("protectionproject");
+        protectionProject.addActionListener(this);
+        menu.add(protectionProject);
 
-		menuEntry.add(clonemap);
+        // -------Add network map--------
 
-		menu.add(menuEntry);
+        menuEntry = new JMenu(Messages.getString("VennMaker.Network_Add"));
 
-		// -------Import--------
-		icon = SvgBatikResizableIcon
-				.getSvgIcon(
-						new FileInputStream(FileOperations.getAbsolutePath(Messages
-								.getString("VennMaker.Icons_User-System"))), new Dimension(16, 16)); //$NON-NLS-1$
+        icon = SvgBatikResizableIcon
+                .getSvgIcon(
+                        new FileInputStream(FileOperations.getAbsolutePath(Messages
+                                .getString("VennMaker.Icons_NewWindow"))), new Dimension(16, 16)); //$NON-NLS-1$
 
-		JMenuItem importactor = new JMenuItem(
-				Messages.getString("VennMaker.ImportActor"), icon); //$NON-NLS-1$
+        JMenuItem addnewmap = new JMenuItem(
+                Messages.getString("VennMaker.Network_AddEmpty"), icon); //$NON-NLS-1$
+        addnewmap.setActionCommand("addnewmap");
+        addnewmap.addActionListener(this);
 
-		importactor.setActionCommand("importactor");
-		importactor.addActionListener(this);
-		menu.add(importactor);		
-		
-		
-		// -------Alle vorhandenen Akteure einzeichnen--------
+        menuEntry.add(addnewmap);
 
-		icon = SvgBatikResizableIcon
-				.getSvgIcon(
-						new FileInputStream(FileOperations.getAbsolutePath(Messages
-								.getString("VennMaker.Icons_Compute"))), new Dimension(16, 16)); //$NON-NLS-1$
+        JMenuItem clonemap = new JMenuItem(
+                Messages.getString("VennMaker.Network_Clone"), icon); //$NON-NLS-1$
+        clonemap.setActionCommand("clonemap");
+        clonemap.addActionListener(this);
 
-		JMenuItem drawAllActors = new JMenuItem(Messages.getString("VennMaker.InputAllActors") ); //$NON-NLS-1$
+        menuEntry.add(clonemap);
 
-		drawAllActors.setActionCommand("drawallactors");
-		drawAllActors.addActionListener(this);
-		
-		menu.add(drawAllActors);
-		
-		
-		
-		// -------Actor Table--------
+        menu.add(menuEntry);
 
-		icon = SvgBatikResizableIcon
-				.getSvgIcon(
-						new FileInputStream(FileOperations
-								.getAbsolutePath("icons/intern/table.svg")), new Dimension(16, 16)); //$NON-NLS-1$
+        // -------Import--------
+        icon = SvgBatikResizableIcon
+                .getSvgIcon(
+                        new FileInputStream(FileOperations.getAbsolutePath(Messages
+                                .getString("VennMaker.Icons_User-System"))), new Dimension(16, 16)); //$NON-NLS-1$
 
-		JMenuItem actortableAnalyse = new JMenuItem(
-				Messages.getString("VennMaker.17"), icon); //$NON-NLS-1$
+        JMenuItem importactor = new JMenuItem(
+                Messages.getString("VennMaker.ImportActor"), icon); //$NON-NLS-1$
 
-		actortableAnalyse.setActionCommand("actortableanalyse");
-		actortableAnalyse.addActionListener(this);
-		menu.add(actortableAnalyse);
+        importactor.setActionCommand("importactor");
+        importactor.addActionListener(this);
+        menu.add(importactor);
 
-		
-		// -------Relation Table-----
-		
-		JMenuItem relationtableAnalyse = new JMenuItem(
-				Messages.getString("VennMaker.22"), icon); //$NON-NLS-1$
 
-		relationtableAnalyse.setActionCommand("relationtableanalyse");
-		relationtableAnalyse.addActionListener(this);
-		menu.add(relationtableAnalyse);
-		
-		
+        // -------Alle vorhandenen Akteure einzeichnen--------
 
-		// ------Analyse------------------------------------------------------------
+        icon = SvgBatikResizableIcon
+                .getSvgIcon(
+                        new FileInputStream(FileOperations.getAbsolutePath(Messages
+                                .getString("VennMaker.Icons_Compute"))), new Dimension(16, 16)); //$NON-NLS-1$
 
-		menu = new JMenu(Messages.getString("VennMaker.MenuAnalyse"));
-		menuBar.add(menu);
+        JMenuItem drawAllActors = new JMenuItem(Messages.getString("VennMaker.InputAllActors")); //$NON-NLS-1$
 
+        drawAllActors.setActionCommand("drawallactors");
+        drawAllActors.addActionListener(this);
 
-		// -------Compute--------
+        menu.add(drawAllActors);
 
-		icon = SvgBatikResizableIcon
-				.getSvgIcon(
-						new FileInputStream(FileOperations.getAbsolutePath(Messages
-								.getString("VennMaker.Icons_Compute"))), new Dimension(16, 16)); //$NON-NLS-1$
 
-		JMenuItem computeAnalyse = new JMenuItem(
-				Messages.getString("VennMaker.Compute"), icon); //$NON-NLS-1$
+        // -------Actor Table--------
 
-		computeAnalyse.setActionCommand("computeanalyse");
-		computeAnalyse.addActionListener(this);
-		menu.add(computeAnalyse);
+        icon = SvgBatikResizableIcon
+                .getSvgIcon(
+                        new FileInputStream(FileOperations
+                                .getAbsolutePath("icons/intern/table.svg")), new Dimension(16, 16)); //$NON-NLS-1$
 
-		// -------Testnetzwerk--------
+        JMenuItem actortableAnalyse = new JMenuItem(
+                Messages.getString("VennMaker.17"), icon); //$NON-NLS-1$
 
-		icon = SvgBatikResizableIcon
-				.getSvgIcon(
-						new FileInputStream(FileOperations.getAbsolutePath(Messages
-								.getString("VennMaker.Icons_Compute"))), new Dimension(16, 16)); //$NON-NLS-1$
+        actortableAnalyse.setActionCommand("actortableanalyse");
+        actortableAnalyse.addActionListener(this);
+        menu.add(actortableAnalyse);
 
-		JMenuItem testAnalyse = new JMenuItem("Generate Test Network", icon); //$NON-NLS-1$
 
-		testAnalyse.setActionCommand("testanalyse");
-		testAnalyse.addActionListener(this);
-		
-		menu.add(testAnalyse);
-	
+        // -------Relation Table-----
 
+        JMenuItem relationtableAnalyse = new JMenuItem(
+                Messages.getString("VennMaker.22"), icon); //$NON-NLS-1$
 
-		// ------------------Config ------------------------------------
+        relationtableAnalyse.setActionCommand("relationtableanalyse");
+        relationtableAnalyse.addActionListener(this);
+        menu.add(relationtableAnalyse);
 
-		menu = new JMenu(Messages.getString("VennMaker.Config"));
-		menuBar.add(menu);
 
-		// -------Attributes --------
-		icon = SvgBatikResizableIcon
-				.getSvgIcon(
-						new FileInputStream(
-								FileOperations
-										.getAbsolutePath("icons/intern/x-office-spreadsheet.svg")), new Dimension(16, 16)); //$NON-NLS-1$
+        // ------Analyse------------------------------------------------------------
 
-		JMenuItem attributesconfig = new JMenuItem(
-				Messages.getString("VennMaker.4"), icon); //$NON-NLS-1$
+        menu = new JMenu(Messages.getString("VennMaker.MenuAnalyse"));
+        menuBar.add(menu);
 
-		attributesconfig.setActionCommand("attributesconfig");
-		attributesconfig.addActionListener(this);
-		menu.add(attributesconfig);
 
-		// -------Relation Attributes --------
-		icon = SvgBatikResizableIcon
-				.getSvgIcon(
-						new FileInputStream(FileOperations.getAbsolutePath(Messages
-								.getString("VennMaker.Icons_User-System"))), new Dimension(16, 16)); //$NON-NLS-1$
+        // -------Compute--------
 
-		JMenuItem relationattributesconfig = new JMenuItem(
-				Messages.getString("VennMaker.Relation_Value"), icon); //$NON-NLS-1$
+        icon = SvgBatikResizableIcon
+                .getSvgIcon(
+                        new FileInputStream(FileOperations.getAbsolutePath(Messages
+                                .getString("VennMaker.Icons_Compute"))), new Dimension(16, 16)); //$NON-NLS-1$
 
-		relationattributesconfig.setActionCommand("relationattributesconfig");
-		relationattributesconfig.addActionListener(this);
-		menu.add(relationattributesconfig);
-		
-		
-		
-		// -------Config Questionnaire --------
-		icon = SvgBatikResizableIcon
-				.getSvgIcon(
-						new FileInputStream(FileOperations.getAbsolutePath(Messages
-								.getString("VennMaker.Icons_User-System"))), new Dimension(16, 16)); //$NON-NLS-1$
+        JMenuItem computeAnalyse = new JMenuItem(
+                Messages.getString("VennMaker.Compute"), icon); //$NON-NLS-1$
 
-		JMenuItem questionnnaireconfig = new JMenuItem(
-				Messages.getString("VennMaker.MenuQuestionnaireConfig")); //$NON-NLS-1$
+        computeAnalyse.setActionCommand("computeanalyse");
+        computeAnalyse.addActionListener(this);
+        menu.add(computeAnalyse);
 
-		questionnnaireconfig.setActionCommand("questionnnaireconfig");
-		questionnnaireconfig.addActionListener(this);
-		menu.add(questionnnaireconfig);
+        // -------Testnetzwerk--------
 
-		// ------ Audio ------------------------------------------------
+        icon = SvgBatikResizableIcon
+                .getSvgIcon(
+                        new FileInputStream(FileOperations.getAbsolutePath(Messages
+                                .getString("VennMaker.Icons_Compute"))), new Dimension(16, 16)); //$NON-NLS-1$
 
-		menu = new JMenu(Messages.getString("VennMaker.23"));
-		menuBar.add(menu);
+        JMenuItem testAnalyse = new JMenuItem("Generate Test Network", icon); //$NON-NLS-1$
 
-		// -------Audio Play--------
+        testAnalyse.setActionCommand("testanalyse");
+        testAnalyse.addActionListener(this);
 
-		icon = SvgBatikResizableIcon
-				.getSvgIcon(
-						new FileInputStream(FileOperations
-								.getAbsolutePath("icons/intern/play.svg")), new Dimension(16, 16)); //$NON-NLS-1$
+        menu.add(testAnalyse);
 
-		JMenuItem audioAnalyse = new JMenuItem(
-				Messages.getString("VennMaker.Audio"), icon); //$NON-NLS-1$
 
-		audioAnalyse.setActionCommand("audioanalyse");
-		audioAnalyse.addActionListener(this);
-		menu.add(audioAnalyse);
-
-		// -------Audio Record / Stop--------
+        // ------------------Config ------------------------------------
 
-		if (Audiorecorder.getInstance().isRunning() == true)
-		{
+        menu = new JMenu(Messages.getString("VennMaker.Config"));
+        menuBar.add(menu);
 
-			icon = SvgBatikResizableIcon
-					.getSvgIcon(
-							new FileInputStream(FileOperations
-									.getAbsolutePath("icons/intern/stop.svg")), new Dimension(16, //$NON-NLS-1$
-									16));
-
-			audiorecordAnalyse = new JMenuItem(
-					(Messages.getString("VennMaker.6")),//$NON-NLS-1$
-					icon);
-		}
-		else
-		{
-			icon = SvgBatikResizableIcon
-					.getSvgIcon(
-							new FileInputStream(FileOperations
-									.getAbsolutePath("icons/intern/record.svg")), new Dimension(16, //$NON-NLS-1$
-									16));
+        // -------Attributes --------
+        icon = SvgBatikResizableIcon
+                .getSvgIcon(
+                        new FileInputStream(
+                                FileOperations
+                                        .getAbsolutePath("icons/intern/x-office-spreadsheet.svg")), new Dimension(16, 16)); //$NON-NLS-1$
 
-			audiorecordAnalyse = new JMenuItem(
-					(Messages.getString("VennMaker.0")),//$NON-NLS-1$
-					icon);
-		}
+        JMenuItem attributesconfig = new JMenuItem(
+                Messages.getString("VennMaker.4"), icon); //$NON-NLS-1$
 
-		audiorecordAnalyse.setActionCommand("audiorecordanalyse");
-		audiorecordAnalyse.addActionListener(this);
-		menu.add(audiorecordAnalyse);	
+        attributesconfig.setActionCommand("attributesconfig");
+        attributesconfig.addActionListener(this);
+        menu.add(attributesconfig);
 
-		
-		// ------ Interview ------------------------------------------------
+        // -------Relation Attributes --------
+        icon = SvgBatikResizableIcon
+                .getSvgIcon(
+                        new FileInputStream(FileOperations.getAbsolutePath(Messages
+                                .getString("VennMaker.Icons_User-System"))), new Dimension(16, 16)); //$NON-NLS-1$
 
-		menu = new JMenu(Messages.getString("VennMaker.Interview"));
-		menuBar.add(menu);
-		
-		// -------Interview notes--------
+        JMenuItem relationattributesconfig = new JMenuItem(
+                Messages.getString("VennMaker.Relation_Value"), icon); //$NON-NLS-1$
 
-		icon = SvgBatikResizableIcon
-				.getSvgIcon(
-						new FileInputStream(FileOperations.getAbsolutePath(Messages
-								.getString("VennMaker.Icons_EditMeta"))), new Dimension(16, 16)); //$NON-NLS-1$
+        relationattributesconfig.setActionCommand("relationattributesconfig");
+        relationattributesconfig.addActionListener(this);
+        menu.add(relationattributesconfig);
 
-		JMenuItem notesProject = new JMenuItem(
-				Messages.getString("VennMaker.EditMeta"), icon); //$NON-NLS-1$
 
-		notesProject.setActionCommand("notesproject");
-		notesProject.addActionListener(this);
-		menu.add(notesProject);
+        // -------Config Questionnaire --------
+        icon = SvgBatikResizableIcon
+                .getSvgIcon(
+                        new FileInputStream(FileOperations.getAbsolutePath(Messages
+                                .getString("VennMaker.Icons_User-System"))), new Dimension(16, 16)); //$NON-NLS-1$
 
-		// -------Start Questionnaire--------
+        JMenuItem questionnnaireconfig = new JMenuItem(
+                Messages.getString("VennMaker.MenuQuestionnaireConfig")); //$NON-NLS-1$
 
-		icon = SvgBatikResizableIcon
-				.getSvgIcon(
-						new FileInputStream(FileOperations
-								.getAbsolutePath("icons/intern/interview.svg")), new Dimension(16, 16)); //$NON-NLS-1$
+        questionnnaireconfig.setActionCommand("questionnnaireconfig");
+        questionnnaireconfig.addActionListener(this);
+        menu.add(questionnnaireconfig);
 
-		JMenuItem interviewAnalyse = new JMenuItem(Messages.getString("VennMaker.Interview_Start"), icon); //$NON-NLS-1$
+        // ------ Audio ------------------------------------------------
 
-		interviewAnalyse.setActionCommand("interviewanalyse");
-		interviewAnalyse.addActionListener(this);
-		menu.add(interviewAnalyse);		
-		
-		// ------ Module ------------------------------------------------
+        menu = new JMenu(Messages.getString("VennMaker.23"));
+        menuBar.add(menu);
 
-		menu = new JMenu("Module");
-		menuBar.add(menu);
-		
-		// ------ VennMaker Hist Modul (testweise)--------
+        // -------Audio Play--------
 
-		icon = SvgBatikResizableIcon
-				.getSvgIcon(
-						new FileInputStream(FileOperations.getAbsolutePath(Messages
-								.getString("VennMaker.Icons_EditMeta"))), new Dimension(16, 16)); //$NON-NLS-1$
+        icon = SvgBatikResizableIcon
+                .getSvgIcon(
+                        new FileInputStream(FileOperations
+                                .getAbsolutePath("icons/intern/play.svg")), new Dimension(16, 16)); //$NON-NLS-1$
 
-		for(int q=0; q < VennMaker.getInstance().getModule().size(); q++){
-		String moduleName = VennMaker.getInstance().getModule().get(q).getModuleName();
-		JMenuItem moduleProject = new JMenuItem(moduleName, icon); //$NON-NLS-1$
+        JMenuItem audioAnalyse = new JMenuItem(
+                Messages.getString("VennMaker.Audio"), icon); //$NON-NLS-1$
 
-		moduleProject.setActionCommand("module"+q);
-		moduleProject.addActionListener(this);
-		menu.add(moduleProject);
-		
-		}
-		
-		
-		
-		
-		// ------ Filter ------------------------------------------------
-
-		menu = new JMenu(Messages.getString("VennMaker.21"));
-		menuBar.add(menu);
-
-		// -------Edit Filter --------
-		icon = SvgBatikResizableIcon
-				.getSvgIcon(
-						new FileInputStream(FileOperations
-								.getAbsolutePath("icons/intern/filter.svg")), new Dimension(16, 16)); //$NON-NLS-1$
-
-		JMenuItem editfilter = new JMenuItem(
-				Messages.getString("VennMaker.15"), icon); //$NON-NLS-1$
-
-		editfilter.setActionCommand("editfilter");
-		editfilter.addActionListener(this);
-		menu.add(editfilter);
-
-		// -------Activate / Deactivate Filter --------
-		icon = SvgBatikResizableIcon
-				.getSvgIcon(
-						new FileInputStream(FileOperations
-								.getAbsolutePath("icons/intern/filter_off.svg")), new Dimension(16, 16)); //$NON-NLS-1$
-
-		activatefilter = new JMenuItem(Messages.getString("VennMaker.18"), icon); //$NON-NLS-1$
-
-		activatefilter.setActionCommand("deactivatefilter");
-		activatefilter.addActionListener(this);
-		menu.add(activatefilter);
-
-
-
-		// ------- About -------------------------------------------------
-
-		menu = new JMenu(Messages.getString("VennMaker.MenuAbout"));
-
-		// -------Check for updates --------
-		icon = SvgBatikResizableIcon
-				.getSvgIcon(
-						new FileInputStream(FileOperations.getAbsolutePath(Messages
-								.getString("VennMaker.Icons_CheckUpdates"))), new Dimension(16, 16)); //$NON-NLS-1$
-
-		JMenuItem aboutUpdate = new JMenuItem(
-				Messages.getString("VennMaker.Check_Updates"), icon); //$NON-NLS-1$
-
-		aboutUpdate.setActionCommand("aboutupdate");
-		aboutUpdate.addActionListener(this);
-		menu.add(aboutUpdate);
-
-		// -------Team info --------
-		icon = SvgBatikResizableIcon
-				.getSvgIcon(
-						new FileInputStream(FileOperations
-								.getAbsolutePath("icons/intern/VennMaker.svg")), new Dimension(16, 16)); //$NON-NLS-1$
-
-		JMenuItem aboutTeam = new JMenuItem("Team"); //$NON-NLS-1$
-
-		aboutTeam.setActionCommand("aboutteam");
-		aboutTeam.addActionListener(this);
-		menu.add(aboutTeam);
-
-		menuBar.add(menu);
-
-		return menuBar;
-
-	}
-
-	@Override
-	public void itemStateChanged(ItemEvent arg0)
-	{
-		// TODO Auto-generated method stub
-	}
-
-	@Override
-	public void actionPerformed(ActionEvent e)
-	{
-		MenuEventList.getInstance().notify(
-				new MenuEvent(this, new MenuObject( e.getActionCommand())));
-	}
-
-	@Override
-	public void action(MenuEvent e)
-	{
-	
-		
-
-		
-		//----------------
-		if ("audiorecordanalyse".equals(e.getInfo().getMessage()))
-		{
-
-			if (Audiorecorder.getInstance().isRunning() == true)
-			{
-				audiorecordAnalyse.setText(Messages.getString("VennMaker.0")); //$NON-NLS-1$
-				try
-				{
-					audiorecordAnalyse.setIcon(SvgBatikResizableIcon.getSvgIcon(
-							new FileInputStream(FileOperations
-									.getAbsolutePath("icons/intern/record.svg")),
-							new Dimension(16, 16)));
-				} catch (FileNotFoundException exn)
-				{
-					// TODO Auto-generated catch block
-					exn.printStackTrace();
-				}
-				audiorecordAnalyse.revalidate();
-				audiorecordAnalyse.repaint();
-			}
-			else if (Audiorecorder.getInstance().isRunning() == false)
-			{
-
-				audiorecordAnalyse.setText(Messages.getString("VennMaker.6")); //$NON-NLS-1$
-				try
-				{
-					audiorecordAnalyse.setIcon(SvgBatikResizableIcon.getSvgIcon(
-							new FileInputStream(FileOperations
-									.getAbsolutePath("icons/intern/stop.svg")),
-							new Dimension(16, 16)));
-				} catch (FileNotFoundException exn)
-				{
-					// TODO Auto-generated catch block
-					exn.printStackTrace();
-				}
-				audiorecordAnalyse.revalidate();
-				audiorecordAnalyse.repaint();
-			}
-
-		}
-	}
+        audioAnalyse.setActionCommand("audioanalyse");
+        audioAnalyse.addActionListener(this);
+        menu.add(audioAnalyse);
+
+        // -------Audio Record / Stop--------
+
+        if (Audiorecorder.getInstance().isRunning() == true) {
+
+            icon = SvgBatikResizableIcon
+                    .getSvgIcon(
+                            new FileInputStream(FileOperations
+                                    .getAbsolutePath("icons/intern/stop.svg")), new Dimension(16, //$NON-NLS-1$
+                                    16));
+
+            audiorecordAnalyse = new JMenuItem(
+                    (Messages.getString("VennMaker.6")),//$NON-NLS-1$
+                    icon);
+        } else {
+            icon = SvgBatikResizableIcon
+                    .getSvgIcon(
+                            new FileInputStream(FileOperations
+                                    .getAbsolutePath("icons/intern/record.svg")), new Dimension(16, //$NON-NLS-1$
+                                    16));
+
+            audiorecordAnalyse = new JMenuItem(
+                    (Messages.getString("VennMaker.0")),//$NON-NLS-1$
+                    icon);
+        }
+
+        audiorecordAnalyse.setActionCommand("audiorecordanalyse");
+        audiorecordAnalyse.addActionListener(this);
+        menu.add(audiorecordAnalyse);
+
+
+        // ------ Interview ------------------------------------------------
+
+        menu = new JMenu(Messages.getString("VennMaker.Interview"));
+        menuBar.add(menu);
+
+        // -------Interview notes--------
+
+        icon = SvgBatikResizableIcon
+                .getSvgIcon(
+                        new FileInputStream(FileOperations.getAbsolutePath(Messages
+                                .getString("VennMaker.Icons_EditMeta"))), new Dimension(16, 16)); //$NON-NLS-1$
+
+        JMenuItem notesProject = new JMenuItem(
+                Messages.getString("VennMaker.EditMeta"), icon); //$NON-NLS-1$
+
+        notesProject.setActionCommand("notesproject");
+        notesProject.addActionListener(this);
+        menu.add(notesProject);
+
+        // -------Start Questionnaire--------
+
+        icon = SvgBatikResizableIcon
+                .getSvgIcon(
+                        new FileInputStream(FileOperations
+                                .getAbsolutePath("icons/intern/interview.svg")), new Dimension(16, 16)); //$NON-NLS-1$
+
+        JMenuItem interviewAnalyse = new JMenuItem(Messages.getString("VennMaker.Interview_Start"), icon); //$NON-NLS-1$
+
+        interviewAnalyse.setActionCommand("interviewanalyse");
+        interviewAnalyse.addActionListener(this);
+        menu.add(interviewAnalyse);
+
+        // ------ Module ------------------------------------------------
+
+        menu = new JMenu("Module");
+        menuBar.add(menu);
+
+        // ------ VennMaker Hist Modul (testweise)--------
+
+        icon = SvgBatikResizableIcon
+                .getSvgIcon(
+                        new FileInputStream(FileOperations.getAbsolutePath(Messages
+                                .getString("VennMaker.Icons_EditMeta"))), new Dimension(16, 16)); //$NON-NLS-1$
+
+        for (int q = 0; q < VennMaker.getInstance().getModule().size(); q++) {
+            String moduleName = VennMaker.getInstance().getModule().get(q).getModuleName();
+            JMenuItem moduleProject = new JMenuItem(moduleName, icon); //$NON-NLS-1$
+
+            moduleProject.setActionCommand("module" + q);
+            moduleProject.addActionListener(this);
+            menu.add(moduleProject);
+
+        }
+
+
+        // ------ Filter ------------------------------------------------
+
+        menu = new JMenu(Messages.getString("VennMaker.21"));
+        menuBar.add(menu);
+
+        // -------Edit Filter --------
+        icon = SvgBatikResizableIcon
+                .getSvgIcon(
+                        new FileInputStream(FileOperations
+                                .getAbsolutePath("icons/intern/filter.svg")), new Dimension(16, 16)); //$NON-NLS-1$
+
+        JMenuItem editfilter = new JMenuItem(
+                Messages.getString("VennMaker.15"), icon); //$NON-NLS-1$
+
+        editfilter.setActionCommand("editfilter");
+        editfilter.addActionListener(this);
+        menu.add(editfilter);
+
+        // -------Activate / Deactivate Filter --------
+        icon = SvgBatikResizableIcon
+                .getSvgIcon(
+                        new FileInputStream(FileOperations
+                                .getAbsolutePath("icons/intern/filter_off.svg")), new Dimension(16, 16)); //$NON-NLS-1$
+
+        activatefilter = new JMenuItem(Messages.getString("VennMaker.18"), icon); //$NON-NLS-1$
+
+        activatefilter.setActionCommand("deactivatefilter");
+        activatefilter.addActionListener(this);
+        menu.add(activatefilter);
+
+
+        // ------- About -------------------------------------------------
+
+        menu = new JMenu(Messages.getString("VennMaker.MenuAbout"));
+
+        // -------Check for updates --------
+        icon = SvgBatikResizableIcon
+                .getSvgIcon(
+                        new FileInputStream(FileOperations.getAbsolutePath(Messages
+                                .getString("VennMaker.Icons_CheckUpdates"))), new Dimension(16, 16)); //$NON-NLS-1$
+
+        JMenuItem aboutUpdate = new JMenuItem(
+                Messages.getString("VennMaker.Check_Updates"), icon); //$NON-NLS-1$
+
+        aboutUpdate.setActionCommand("aboutupdate");
+        aboutUpdate.addActionListener(this);
+        menu.add(aboutUpdate);
+
+        // -------Team info --------
+        icon = SvgBatikResizableIcon
+                .getSvgIcon(
+                        new FileInputStream(FileOperations
+                                .getAbsolutePath("icons/intern/VennMaker.svg")), new Dimension(16, 16)); //$NON-NLS-1$
+
+        JMenuItem aboutTeam = new JMenuItem("Team"); //$NON-NLS-1$
+
+        aboutTeam.setActionCommand("aboutteam");
+        aboutTeam.addActionListener(this);
+        menu.add(aboutTeam);
+
+        menuBar.add(menu);
+
+        return menuBar;
+
+    }
+
+    @Override
+    public void itemStateChanged(ItemEvent arg0) {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        MenuEventList.getInstance().notify(
+                new MenuEvent(this, new MenuObject(e.getActionCommand())));
+    }
+
+    @Override
+    public void action(MenuEvent e) {
+
+
+        //----------------
+        if ("audiorecordanalyse".equals(e.getInfo().getMessage())) {
+
+            if (Audiorecorder.getInstance().isRunning() == true) {
+                audiorecordAnalyse.setText(Messages.getString("VennMaker.0")); //$NON-NLS-1$
+                try {
+                    audiorecordAnalyse.setIcon(SvgBatikResizableIcon.getSvgIcon(
+                            new FileInputStream(FileOperations
+                                    .getAbsolutePath("icons/intern/record.svg")),
+                            new Dimension(16, 16)));
+                } catch (FileNotFoundException exn) {
+                    // TODO Auto-generated catch block
+                    exn.printStackTrace();
+                }
+                audiorecordAnalyse.revalidate();
+                audiorecordAnalyse.repaint();
+            } else if (Audiorecorder.getInstance().isRunning() == false) {
+
+                audiorecordAnalyse.setText(Messages.getString("VennMaker.6")); //$NON-NLS-1$
+                try {
+                    audiorecordAnalyse.setIcon(SvgBatikResizableIcon.getSvgIcon(
+                            new FileInputStream(FileOperations
+                                    .getAbsolutePath("icons/intern/stop.svg")),
+                            new Dimension(16, 16)));
+                } catch (FileNotFoundException exn) {
+                    // TODO Auto-generated catch block
+                    exn.printStackTrace();
+                }
+                audiorecordAnalyse.revalidate();
+                audiorecordAnalyse.repaint();
+            }
+
+        }
+    }
 }

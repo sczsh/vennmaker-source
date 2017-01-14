@@ -1,47 +1,40 @@
 /**
- * 
+ *
  */
 package gui.configdialog.settings;
 
-import gui.VennMaker;
 import data.EventProcessor;
 import data.Netzwerk;
 import events.DeleteNetworkEvent;
+import gui.VennMaker;
 
 /**
  * Immidiate-Setting which adds a new empty network map.
- * 
- * 
- * 
  */
-public class SettingNewNetwork implements ImmidiateConfigDialogSetting
-{
-	private String		name;
+public class SettingNewNetwork implements ImmidiateConfigDialogSetting {
+    private String name;
 
-	private Netzwerk	netzwerk;
+    private Netzwerk netzwerk;
 
-	public SettingNewNetwork(String name)
-	{
-		this.name = name;
-	}
+    public SettingNewNetwork(String name) {
+        this.name = name;
+    }
 
-	@Override
-	public void set()
-	{
-		netzwerk = VennMaker.getInstance().getProject().getCurrentNetzwerk()
-				.getNewNetwork(name, false);
+    @Override
+    public void set() {
+        netzwerk = VennMaker.getInstance().getProject().getCurrentNetzwerk()
+                .getNewNetwork(name, false);
 
-		// if (netzwerk != null && !name.equals(""))
+        // if (netzwerk != null && !name.equals(""))
 
-	}
+    }
 
-	@Override
-	public void undo()
-	{
-		// EventProcessor.getInstance().undoEvent();
-		DeleteNetworkEvent evt = new DeleteNetworkEvent(netzwerk, false);
+    @Override
+    public void undo() {
+        // EventProcessor.getInstance().undoEvent();
+        DeleteNetworkEvent evt = new DeleteNetworkEvent(netzwerk, false);
 
-		EventProcessor.getInstance().fireEvent(evt);
-	}
+        EventProcessor.getInstance().fireEvent(evt);
+    }
 
 }

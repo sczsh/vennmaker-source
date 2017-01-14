@@ -1,46 +1,40 @@
 package gui.configdialog.save;
 
-import java.util.HashMap;
-
 import data.AttributeType;
 
-public class LegendSaveElement extends SaveElement
-{
-	private Boolean									drawActorSymbols;
+import java.util.HashMap;
 
-	private Boolean									drawActorSizes;
+public class LegendSaveElement extends SaveElement {
+    private Boolean drawActorSymbols;
 
-	private Boolean									drawActorPies;
+    private Boolean drawActorSizes;
 
-	private HashMap<AttributeType, Boolean>	drawRelations	= new HashMap<AttributeType, Boolean>();
+    private Boolean drawActorPies;
 
-	public LegendSaveElement(Boolean drawActorSymbols, Boolean drawActorSizes,
-			Boolean drawActorPies, HashMap<AttributeType, Boolean> drawRelations)
-	{
-		this.drawActorSymbols = drawActorSymbols;
-		this.drawActorSizes = drawActorSizes;
-		this.drawActorPies = drawActorPies;
-		this.drawRelations = drawRelations;
-	}
+    private HashMap<AttributeType, Boolean> drawRelations = new HashMap<AttributeType, Boolean>();
 
-	public Boolean getDrawSymbols()
-	{
-		return this.drawActorSymbols;
-	}
+    public LegendSaveElement(Boolean drawActorSymbols, Boolean drawActorSizes,
+                             Boolean drawActorPies, HashMap<AttributeType, Boolean> drawRelations) {
+        this.drawActorSymbols = drawActorSymbols;
+        this.drawActorSizes = drawActorSizes;
+        this.drawActorPies = drawActorPies;
+        this.drawRelations = drawRelations;
+    }
 
-	public Boolean getDrawSizes()
-	{
-		return this.drawActorSizes;
-	}
+    public Boolean getDrawSymbols() {
+        return this.drawActorSymbols;
+    }
 
-	public Boolean getDrawPies()
-	{
-		return this.drawActorPies;
-	}
+    public Boolean getDrawSizes() {
+        return this.drawActorSizes;
+    }
 
-	public HashMap<AttributeType, Boolean> getDrawRelations()
-	{
-		return this.drawRelations;
-	}
+    public Boolean getDrawPies() {
+        return this.drawActorPies;
+    }
+
+    public HashMap<AttributeType, Boolean> getDrawRelations() {
+        return this.drawRelations;
+    }
 
 }

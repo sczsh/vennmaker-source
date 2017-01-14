@@ -1,5 +1,9 @@
 package interview.elements.relation;
 
+import data.Akteur;
+import data.AttributeType;
+import data.Netzwerk;
+import data.Relation;
 import gui.Messages;
 import gui.VennMaker;
 import interview.InterviewElementInformation;
@@ -12,346 +16,307 @@ import interview.elements.StandardElementDemandingActors;
 import interview.elements.information.InputElementInformation;
 import interview.panels.multi.RelationRadioAnswerPanel;
 
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
+import javax.swing.*;
+import java.awt.*;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
-import data.Akteur;
-import data.AttributeType;
-import data.Netzwerk;
-import data.Relation;
 
 /**
  * Objects of this class create a <code>Relation</code> beteween the given
  * actors based on the user's choice
- * 
- * 
- * 
  */
 public class RelationGeneratorListElement extends
-		StandardElementDemandingActors implements
-		IECategory_RelationInterpretator
-{
-	/**
-	 * 
-	 */
-	private static final long				serialVersionUID		= 6832247297377687109L;
+        StandardElementDemandingActors implements
+        IECategory_RelationInterpretator {
+    /**
+     *
+     */
+    private static final long serialVersionUID = 6832247297377687109L;
 
-	protected JComboBox<Netzwerk>			networkComboBox;
+    protected JComboBox<Netzwerk> networkComboBox;
 
-	/**
-	 * Actors are saved in this map with their actors where they have no relation
-	 * to
-	 */
-	protected Map<Akteur, List<Akteur>>	actorsWithNoRelation;
+    /**
+     * Actors are saved in this map with their actors where they have no relation
+     * to
+     */
+    protected Map<Akteur, List<Akteur>> actorsWithNoRelation;
 
-	/**
-	 * The actors to ask the first time. This Map is only used if "previous" is
-	 * clicked in the <code>InterviewController</code>
-	 */
-	protected Map<Akteur, List<Akteur>>	initalActorsToAsk;
+    /**
+     * The actors to ask the first time. This Map is only used if "previous" is
+     * clicked in the <code>InterviewController</code>
+     */
+    protected Map<Akteur, List<Akteur>> initalActorsToAsk;
 
-	protected boolean							filterDirectedActors	= true;
+    protected boolean filterDirectedActors = true;
 
-	/**
-	 * Create a new object of <code>RelationGeneratorElement</code>
-	 */
-	public RelationGeneratorListElement()
-	{
-		super(new NameInfoPanel(false), new FilterPanel(), null, true);
-		actorsWithNoRelation = new HashMap<Akteur, List<Akteur>>();
-		initalActorsToAsk = new HashMap<Akteur, List<Akteur>>();
+    /**
+     * Create a new object of <code>RelationGeneratorElement</code>
+     */
+    public RelationGeneratorListElement() {
+        super(new NameInfoPanel(false), new FilterPanel(), null, true);
+        actorsWithNoRelation = new HashMap<Akteur, List<Akteur>>();
+        initalActorsToAsk = new HashMap<Akteur, List<Akteur>>();
 
-		List<Akteur> actorsToSet = fSelector.getFilteredActors();
-		Collections.sort(actorsToSet);
+        List<Akteur> actorsToSet = fSelector.getFilteredActors();
+        Collections.sort(actorsToSet);
 
-		setActors(actorsToSet);
-		// TODO Auto-generated constructor stub
-	}
+        setActors(actorsToSet);
+        // TODO Auto-generated constructor stub
+    }
 
-	@Override
-	public JPanel getControllerDialog()
-	{
-		specialPanel = new RelationRadioAnswerPanel(
-				getCurrentActor(),
-				networkComboBox.getItemAt(networkComboBox.getSelectedIndex()),
-				Messages.getString("RelationGeneratorPairElement.RelationsCreated"), actorsWithNoRelation); //$NON-NLS-1$
+    @Override
+    public JPanel getControllerDialog() {
+        specialPanel = new RelationRadioAnswerPanel(
+                getCurrentActor(),
+                networkComboBox.getItemAt(networkComboBox.getSelectedIndex()),
+                Messages.getString("RelationGeneratorPairElement.RelationsCreated"), actorsWithNoRelation); //$NON-NLS-1$
 
-		specialPanel.setAttributesAndQuestions(aSelector
-				.getAttributesAndQuestions());
+        specialPanel.setAttributesAndQuestions(aSelector
+                .getAttributesAndQuestions());
 
-		List<Akteur> akteure = null;
+        List<Akteur> akteure = null;
 
-		if (filterDirectedActors)
-		{
-			akteure = filterDirectedActors(fSelector.getFilteredActors());
-			if (initalActorsToAsk.get(getCurrentActor()) == null)
-				initalActorsToAsk.put(getCurrentActor(), akteure);
-		}
-		else
-		{
-			akteure = initalActorsToAsk.get(getCurrentActor());
-		}
+        if (filterDirectedActors) {
+            akteure = filterDirectedActors(fSelector.getFilteredActors());
+            if (initalActorsToAsk.get(getCurrentActor()) == null)
+                initalActorsToAsk.put(getCurrentActor(), akteure);
+        } else {
+            akteure = initalActorsToAsk.get(getCurrentActor());
+        }
 
-		// if (getActors().size() < 1)
-		// {
-		// if (InterviewController.getInstance().wasNextPressed())
-		// {
-		// InterviewController.getInstance().next();
-		// }
-		// else
-		// {
-		// InterviewController.getInstance().previous();
-		// }
-		// }
-		
-		for (Akteur actor : getActors()){
-			if (getCurrentActor().equals(actor)){
-				akteure.remove(actor);
-			}
+        // if (getActors().size() < 1)
+        // {
+        // if (InterviewController.getInstance().wasNextPressed())
+        // {
+        // InterviewController.getInstance().next();
+        // }
+        // else
+        // {
+        // InterviewController.getInstance().previous();
+        // }
+        // }
 
-		}
-		JPanel p = super.getControllerDialog();
-		specialPanel.setActors(akteure);
-		specialPanel.rebuild();
+        for (Akteur actor : getActors()) {
+            if (getCurrentActor().equals(actor)) {
+                akteure.remove(actor);
+            }
 
-		return p;
-	}
+        }
+        JPanel p = super.getControllerDialog();
+        specialPanel.setActors(akteure);
+        specialPanel.rebuild();
 
-	@Override
-	public boolean writeData()
-	{
-		return specialPanel.performChanges();
-	}
+        return p;
+    }
 
-	public void deinitPreview()
-	{
-		super.deinitPreview();
-		initalActorsToAsk.clear();
-	}
+    @Override
+    public boolean writeData() {
+        return specialPanel.performChanges();
+    }
 
-	@Override
-	public void setData()
-	{
-		List<Akteur> actorsToSet = fSelector.getFilteredActors();
-		Collections.sort(actorsToSet);
-		setActors(actorsToSet);
-	}
+    public void deinitPreview() {
+        super.deinitPreview();
+        initalActorsToAsk.clear();
+    }
 
-	@Override
-	public JPanel getConfigurationDialog()
-	{
-		if (configurationPanel != null)
-		{
-			List<AttributeType> allRelationAttributes = new ArrayList<AttributeType>();
+    @Override
+    public void setData() {
+        List<Akteur> actorsToSet = fSelector.getFilteredActors();
+        Collections.sort(actorsToSet);
+        setActors(actorsToSet);
+    }
 
-			for (String collector : VennMaker.getInstance().getProject()
-					.getAttributeCollectors())
-				allRelationAttributes.addAll(VennMaker.getInstance().getProject()
-						.getAttributeTypes(collector));
+    @Override
+    public JPanel getConfigurationDialog() {
+        if (configurationPanel != null) {
+            List<AttributeType> allRelationAttributes = new ArrayList<AttributeType>();
 
-			aSelector.updatePanel(allRelationAttributes);
+            for (String collector : VennMaker.getInstance().getProject()
+                    .getAttributeCollectors())
+                allRelationAttributes.addAll(VennMaker.getInstance().getProject()
+                        .getAttributeTypes(collector));
 
-			if (attributesAndQuestions != null)
-				aSelector.setAttributesAndQuestions(attributesAndQuestions);
+            aSelector.updatePanel(allRelationAttributes);
 
-			return configurationPanel;
-		}
+            if (attributesAndQuestions != null)
+                aSelector.setAttributesAndQuestions(attributesAndQuestions);
+
+            return configurationPanel;
+        }
 
 		/* create the SingleAttributePanel with the option to create new groups */
-		aSelector = new SingleAttributePanel(false, true);
-		aSelector.setParent(this);
+        aSelector = new SingleAttributePanel(false, true);
+        aSelector.setParent(this);
 
-		JPanel selectNetworkPanel = new JPanel(new GridBagLayout());
-		GridBagConstraints gbc = new GridBagConstraints();
+        JPanel selectNetworkPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
 
-		gbc.anchor = GridBagConstraints.WEST;
-		gbc.gridwidth = 1;
-		gbc.insets = new Insets(0, 0, 0, 10);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.gridwidth = 1;
+        gbc.insets = new Insets(0, 0, 0, 10);
 
-		selectNetworkPanel.add(new JLabel(Messages
-				.getString("RelationGeneratorListElement.ComboBox"))); //$NON-NLS-1$
+        selectNetworkPanel.add(new JLabel(Messages
+                .getString("RelationGeneratorListElement.ComboBox"))); //$NON-NLS-1$
 
-		gbc.gridx = 1;
-		gbc.gridwidth = 4;
-		gbc.weightx = 1.0;
-		gbc.insets = new Insets(0, 15, 0, 10);
+        gbc.gridx = 1;
+        gbc.gridwidth = 4;
+        gbc.weightx = 1.0;
+        gbc.insets = new Insets(0, 15, 0, 10);
 
-		networkComboBox = new JComboBox<Netzwerk>(VennMaker.getInstance()
-				.getProject().getNetzwerke());
+        networkComboBox = new JComboBox<Netzwerk>(VennMaker.getInstance()
+                .getProject().getNetzwerke());
 
-		selectNetworkPanel.add(networkComboBox, gbc);
-		JPanel configPanel = super.getConfigurationDialog();
-		configurationPanel = new JPanel(new GridBagLayout());
-		configurationPanel.setMinimumSize(new Dimension(280, 250));
+        selectNetworkPanel.add(networkComboBox, gbc);
+        JPanel configPanel = super.getConfigurationDialog();
+        configurationPanel = new JPanel(new GridBagLayout());
+        configurationPanel.setMinimumSize(new Dimension(280, 250));
 
-		GridBagConstraints panelConstraints = new GridBagConstraints();
-		panelConstraints.fill = GridBagConstraints.HORIZONTAL;
-		panelConstraints.insets = new Insets(20, 0, 0, 0);
+        GridBagConstraints panelConstraints = new GridBagConstraints();
+        panelConstraints.fill = GridBagConstraints.HORIZONTAL;
+        panelConstraints.insets = new Insets(20, 0, 0, 0);
 
-		configurationPanel.add(selectNetworkPanel, panelConstraints);
+        configurationPanel.add(selectNetworkPanel, panelConstraints);
 
-		panelConstraints.gridy = 1;
-		panelConstraints.weighty = 1;
-		panelConstraints.weightx = 1;
-		panelConstraints.fill = GridBagConstraints.BOTH;
+        panelConstraints.gridy = 1;
+        panelConstraints.weighty = 1;
+        panelConstraints.weightx = 1;
+        panelConstraints.fill = GridBagConstraints.BOTH;
 
-		configurationPanel.add(configPanel, panelConstraints);
+        configurationPanel.add(configPanel, panelConstraints);
 
-		List<AttributeType> allRelationAttributes = new ArrayList<AttributeType>();
+        List<AttributeType> allRelationAttributes = new ArrayList<AttributeType>();
 
-		for (String collector : VennMaker.getInstance().getProject()
-				.getAttributeCollectors())
-			allRelationAttributes.addAll(VennMaker.getInstance().getProject()
-					.getAttributeTypes(collector));
+        for (String collector : VennMaker.getInstance().getProject()
+                .getAttributeCollectors())
+            allRelationAttributes.addAll(VennMaker.getInstance().getProject()
+                    .getAttributeTypes(collector));
 
-		aSelector.updatePanel(allRelationAttributes);
+        aSelector.updatePanel(allRelationAttributes);
 
-		return configurationPanel;
-	}
-	
-/**
- * Only use the filtered actors
- * @param actor list
- * @return new actor list
- */
-	public List<Akteur> filterDirectedActors(List<Akteur> actors)
-	{
+        return configurationPanel;
+    }
 
-		List<Akteur> temp = new ArrayList<Akteur>();
+    /**
+     * Only use the filtered actors
+     *
+     * @param actor list
+     * @return new actor list
+     */
+    public List<Akteur> filterDirectedActors(List<Akteur> actors) {
 
-		for (Akteur a : actors)
-			temp.add(a);
+        List<Akteur> temp = new ArrayList<Akteur>();
 
-		actors = new ArrayList<Akteur>();
+        for (Akteur a : actors)
+            temp.add(a);
 
-		for (Akteur a : temp)
-		{
-			if (a.equals(getCurrentActor())
-					|| actorsWithNoRelation.get(getCurrentActor()) != null
-					&& actorsWithNoRelation.get(getCurrentActor()).contains(a))
-				continue;
+        actors = new ArrayList<Akteur>();
 
-			if (actorsWithNoRelation.get(a) != null
-					&& actorsWithNoRelation.get(a).contains(getCurrentActor()))
-				continue;
+        for (Akteur a : temp) {
+            if (a.equals(getCurrentActor())
+                    || actorsWithNoRelation.get(getCurrentActor()) != null
+                    && actorsWithNoRelation.get(getCurrentActor()).contains(a))
+                continue;
 
-			Relation existing = a.getRelationTo(getCurrentActor(),
-					(Netzwerk) networkComboBox.getSelectedItem(), aSelector
-							.getAttributesAndQuestions().values().iterator().next());
+            if (actorsWithNoRelation.get(a) != null
+                    && actorsWithNoRelation.get(a).contains(getCurrentActor()))
+                continue;
 
-			if (existing == null
-					|| existing != null
-					&& VennMaker.getInstance().getProject()
-							.getIsDirected(existing.getAttributeCollectorValue()))
-				actors.add(a);
-		}
+            Relation existing = a.getRelationTo(getCurrentActor(),
+                    (Netzwerk) networkComboBox.getSelectedItem(), aSelector
+                            .getAttributesAndQuestions().values().iterator().next());
 
-		return actors;
-	}
+            if (existing == null
+                    || existing != null
+                    && VennMaker.getInstance().getProject()
+                    .getIsDirected(existing.getAttributeCollectorValue()))
+                actors.add(a);
+        }
 
-	public List<Akteur> filterDirectedActors(List<Akteur> actors, Akteur owner)
-	{
-		List<Akteur> temp = new ArrayList<Akteur>();
+        return actors;
+    }
 
-		for (Akteur a : actors)
-			temp.add(a);
+    public List<Akteur> filterDirectedActors(List<Akteur> actors, Akteur owner) {
+        List<Akteur> temp = new ArrayList<Akteur>();
 
-		actors = new ArrayList<Akteur>();
+        for (Akteur a : actors)
+            temp.add(a);
 
-		for (Akteur a : temp)
-		{
-			if (a.equals(owner))
-				continue;
+        actors = new ArrayList<Akteur>();
 
-			Relation existing = a.getRelationTo(owner,
-					(Netzwerk) networkComboBox.getSelectedItem());
+        for (Akteur a : temp) {
+            if (a.equals(owner))
+                continue;
 
-			if (existing == null
-					|| existing != null
-					&& VennMaker.getInstance().getProject()
-							.getIsDirected(existing.getAttributeCollectorValue()))
-				actors.add(a);
-		}
+            Relation existing = a.getRelationTo(owner,
+                    (Netzwerk) networkComboBox.getSelectedItem());
 
-		return actors;
-	}
+            if (existing == null
+                    || existing != null
+                    && VennMaker.getInstance().getProject()
+                    .getIsDirected(existing.getAttributeCollectorValue()))
+                actors.add(a);
+        }
 
-	@Override
-	public String getInstructionText()
-	{
-		return Messages.getString("RelationGeneratorListElement.Info"); //$NON-NLS-1$
-	}
+        return actors;
+    }
 
-	@Override
-	public InterviewElementInformation getElementInfo()
-	{
-		InputElementInformation information = (InputElementInformation) super
-				.getElementInfo();
+    @Override
+    public String getInstructionText() {
+        return Messages.getString("RelationGeneratorListElement.Info"); //$NON-NLS-1$
+    }
 
-		information.setNetwork((Netzwerk) networkComboBox.getSelectedItem());
+    @Override
+    public InterviewElementInformation getElementInfo() {
+        InputElementInformation information = (InputElementInformation) super
+                .getElementInfo();
 
-		return information;
-	}
+        information.setNetwork((Netzwerk) networkComboBox.getSelectedItem());
 
-	@Override
-	public void setElementInfo(InterviewElementInformation information)
-	{
-		if (!(information instanceof InputElementInformation))
-			return;
+        return information;
+    }
 
-		super.setElementInfo(information);
+    @Override
+    public void setElementInfo(InterviewElementInformation information) {
+        if (!(information instanceof InputElementInformation))
+            return;
 
-		getConfigurationDialog();
+        super.setElementInfo(information);
 
-		InputElementInformation info = (InputElementInformation) information;
+        getConfigurationDialog();
 
-		for (int i = 0; i < networkComboBox.getItemCount(); i++)
-			if (networkComboBox.getItemAt(i).toString()
-					.equals(info.getNetwork().toString()))
-				networkComboBox.setSelectedIndex(i);
+        InputElementInformation info = (InputElementInformation) information;
 
-		aSelector.setAttributesAndQuestions(info.getAttributesAndQuestions());
+        for (int i = 0; i < networkComboBox.getItemCount(); i++)
+            if (networkComboBox.getItemAt(i).toString()
+                    .equals(info.getNetwork().toString()))
+                networkComboBox.setSelectedIndex(i);
 
-	}
+        aSelector.setAttributesAndQuestions(info.getAttributesAndQuestions());
 
-	public JComboBox<Netzwerk> getNetworkComboBox()
-	{
-		return networkComboBox;
-	}
+    }
 
-	public void setNetworkComboBox(JComboBox<Netzwerk> networkComboBox)
-	{
-		this.networkComboBox = networkComboBox;
-	}
+    public JComboBox<Netzwerk> getNetworkComboBox() {
+        return networkComboBox;
+    }
 
-	public InterviewElement getPreviousElementInList()
-	{
-		this.filterDirectedActors = false;
+    public void setNetworkComboBox(JComboBox<Netzwerk> networkComboBox) {
+        this.networkComboBox = networkComboBox;
+    }
 
-		return super.getPreviousElementInList();
-	}
+    public InterviewElement getPreviousElementInList() {
+        this.filterDirectedActors = false;
 
-	public InterviewElement getNextElementInList()
-	{
-		this.filterDirectedActors = true;
+        return super.getPreviousElementInList();
+    }
 
-		return super.getNextElementInList();
-	}
+    public InterviewElement getNextElementInList() {
+        this.filterDirectedActors = true;
 
-	public void resetInternalPointer()
-	{
-		this.actorsWithNoRelation.clear();
-		super.resetInternalPointer();
-	}
+        return super.getNextElementInList();
+    }
+
+    public void resetInternalPointer() {
+        this.actorsWithNoRelation.clear();
+        super.resetInternalPointer();
+    }
 }

@@ -3,71 +3,60 @@ package interview.elements;
 import gui.Messages;
 import interview.InterviewElementInformation;
 
-import javax.swing.JPanel;
+import javax.swing.*;
 
-public class RootElement extends InterviewElement
-{
+public class RootElement extends InterviewElement {
 
-	public RootElement()
-	{
-		this.setElementNameInTree(new String(Messages.getString("CDialogInterviewCreator.TreeRootElement")));
-	}
-	
-	@Override
-	public JPanel getControllerDialog()
-	{
-		return null;
-	}
+    public RootElement() {
+        this.setElementNameInTree(new String(Messages.getString("CDialogInterviewCreator.TreeRootElement")));
+    }
 
-	@Override
-	public boolean writeData()
-	{
-		return false;
-	}
+    @Override
+    public JPanel getControllerDialog() {
+        return null;
+    }
 
-	@Override
-	public void setData()
-	{
-		
-	}
+    @Override
+    public boolean writeData() {
+        return false;
+    }
 
-	@Override
-	public JPanel getConfigurationDialog()
-	{
-		return null;
-	}
+    @Override
+    public void setData() {
 
-	@Override
-	public boolean addToTree()
-	{
-		return false;
-	}
+    }
 
-	@Override
-	public String getInstructionText()
-	{
-		return null;
-	}
+    @Override
+    public JPanel getConfigurationDialog() {
+        return null;
+    }
 
-	@Override
-	public InterviewElementInformation getElementInfo()
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public boolean addToTree() {
+        return false;
+    }
 
-	@Override
-	public void setElementInfo(InterviewElementInformation information)
-	{
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public String getInstructionText() {
+        return null;
+    }
 
-	@Override
-	public boolean validateInput()
-	{
-		return true;
-	}
-	
-	
+    @Override
+    public InterviewElementInformation getElementInfo() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void setElementInfo(InterviewElementInformation information) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public boolean validateInput() {
+        return true;
+    }
+
+
 }

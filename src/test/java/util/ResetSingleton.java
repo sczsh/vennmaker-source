@@ -7,17 +7,11 @@ import java.lang.annotation.Target;
 
 /**
  * Setzt ein Feld einer Klasse auf null
- * 
- * 
- * 
- * 
- * 
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface ResetSingleton
-{
-	Class type();
+public @interface ResetSingleton {
+    Class type();
 
-	String field();
+    String field();
 }

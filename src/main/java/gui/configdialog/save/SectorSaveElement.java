@@ -1,51 +1,45 @@
 package gui.configdialog.save;
 
-import java.util.List;
-import java.util.Map;
-
 import data.AttributeType;
 import data.BackgroundInfo.SectorInfo;
 import data.Netzwerk;
 
-public class SectorSaveElement extends SaveElement
-{
+import java.util.List;
+import java.util.Map;
 
-	public Netzwerk			net;
+public class SectorSaveElement extends SaveElement {
 
-	public Map<AttributeType, List<SectorInfo>> sectorCache;
+    public Netzwerk net;
 
-	private double				alpha;
-	
-	private String			sectorAttribute;
+    public Map<AttributeType, List<SectorInfo>> sectorCache;
 
-	public SectorSaveElement(Netzwerk net,
-			Map<AttributeType, List<SectorInfo>> sectorCache, double alpha,
-			String sectorAttribute)
-	{
-		this.net = net;
-		this.sectorCache = sectorCache;
-		this.alpha = alpha;
-		this.sectorAttribute = sectorAttribute;
-	}
+    private double alpha;
 
-	public Netzwerk getNet()
-	{
-		return net;
-	}
+    private String sectorAttribute;
 
-	public Map<AttributeType, List<SectorInfo>> getSectorCache()
-	{
-		return sectorCache;
-	}
+    public SectorSaveElement(Netzwerk net,
+                             Map<AttributeType, List<SectorInfo>> sectorCache, double alpha,
+                             String sectorAttribute) {
+        this.net = net;
+        this.sectorCache = sectorCache;
+        this.alpha = alpha;
+        this.sectorAttribute = sectorAttribute;
+    }
 
-	public double getAlpha()
-	{
-		return alpha;
-	}
+    public Netzwerk getNet() {
+        return net;
+    }
 
-	public String getSectorAttribute()
-	{
-		return sectorAttribute;
-	}
+    public Map<AttributeType, List<SectorInfo>> getSectorCache() {
+        return sectorCache;
+    }
+
+    public double getAlpha() {
+        return alpha;
+    }
+
+    public String getSectorAttribute() {
+        return sectorAttribute;
+    }
 
 }
