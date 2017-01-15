@@ -4,6 +4,7 @@
  */
 package gui;
 
+import com.vennmaker.Version;
 import com.thoughtworks.xstream.converters.ConversionException;
 import data.*;
 import data.AttributeType.Scope;
@@ -188,7 +189,7 @@ public class VennMaker extends JFrame {
      */
     private JPanel nextPanel;
 
-    public static String VERSION = "2.0.0";                            //$NON-NLS-1$
+    public static String VERSION = Version.VENNMAKER_VERSION;                            //$NON-NLS-1$
 
     public static int internVERSION = 2000000;                                        // e.g.
     // 1
@@ -343,20 +344,8 @@ public class VennMaker extends JFrame {
     private VennMaker() {
         super(Messages.getString("VennMaker.VennMaker") + VERSION); //$NON-NLS-1$
 
-        // ergaenze Versionsangabe um Revision
-        try {
-            // versuche Revision aus Datei zu lesen
-            BufferedReader versionFile = new BufferedReader(new FileReader(
-                    Messages.getString("VennMaker.Version")));//$NON-NLS-1$
-            REVISION += " " + versionFile.readLine(); //$NON-NLS-1$
-        } catch (IOException e) {
-            // Fallback via svn:keywords
-            REVISION += " $Rev: 1435 $"; //$NON-NLS-1$
-        }
-
-        // Listener-Listen initialisieren
-        netzwerkChangeListeners = new LinkedList<VennListener>();
-        uncaughtExceptionListeners = new ArrayList<UncaughtExceptionListener>();
+        netzwerkChangeListeners = new LinkedList<>();
+        uncaughtExceptionListeners = new ArrayList<>();
 
         // Audiorecorder stoppen
         MediaEventList.getInstance().notify(
