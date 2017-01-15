@@ -2202,9 +2202,26 @@ public class VennMaker extends JFrame {
 
     private static void startVennMakerInSelectedMode(final int startMode) {
         showMainWindow();
-        if(startMode != StartChooser.FREE_DRAWING) {
+
+        if(startMode == StartChooser.LOAD_PROJECT) {
+            loadProject();
+        } else {
             SwingUtilities.invokeLater(() -> selectNonFreeDrawingMode(startMode));
         }
+    }
+
+    private static void loadProject() {
+        showMainWindow();
+        OpenFileDialog chooser = new OpenFileDialog();
+        chooser.show();
+
+        if (chooser.getFilename() == null || chooser.getFilename().equals(""))
+            return;
+
+        FileOperations.openVmpFile(chooser.getVmpFile(),
+                chooser.getFilename(), chooser.getLastVisitedDirectory());
+
+        VennMaker.getInstance().refresh();
     }
 
     private static void selectNonFreeDrawingMode(int mode) {
