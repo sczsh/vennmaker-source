@@ -351,41 +351,7 @@ public class VennMaker extends JFrame {
         MediaEventList.getInstance().notify(
                 new MediaEvent(this, new MediaObject(MediaObject.STOP)));
 
-        // WindowListener zum Ueberpruefen ungespeicherter Daten
-        this.addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent ev) {
-
-                // Bei ungespeicherten Daten nachfragen, ob gespeichert werden
-                // soll
-                if (!VennMaker.getInstance().isChangesSaved())
-                    switch (JOptionPane.showConfirmDialog(null,
-                            Messages.getString("VennMaker.ConfirmQuit"), Messages //$NON-NLS-1$
-                                    .getString("VennMaker.ConfirmQuitTitel"), //$NON-NLS-1$
-                            JOptionPane.YES_NO_CANCEL_OPTION)) {
-
-                        // zurueck zu Vennmaker
-                        case JOptionPane.CANCEL_OPTION:
-                            break;
-
-                        case JOptionPane.CLOSED_OPTION:
-                            break;
-
-                        // VennMaker ohne Speichern verlassen
-                        case JOptionPane.NO_OPTION:
-                            exitVennMaker();
-                            break;
-
-                        // Speicherdialog vorm Beenden aufrufen
-                        default:
-                            if (IO.save() == 1) {
-                                exitVennMaker();
-                            }
-                    }
-                else
-                    exitVennMaker();
-            }
-        });
-
+        this.addWindowListener(new VennMakerWindowCloseListener<Void>(cb -> exitVennMaker()));
         this.projekt = new Projekt();
         config = new Config();
     }
