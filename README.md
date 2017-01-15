@@ -13,4 +13,4 @@ Currently the Unit Tests are failing. Build with -DskipTests
 
 Build: mvn -DskipTests clean install
 
-Run: java -jar target/vennmaker-<version>-jar-with-dependencies.jar
+Run: java -jar target/vennmaker-\<version>-jar-with-dependencies.jar
