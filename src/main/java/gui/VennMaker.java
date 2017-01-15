@@ -2174,9 +2174,6 @@ public class VennMaker extends JFrame {
 
         Locale.setDefault(Locale.ENGLISH);
 
-        /** test the folders, if every needed one is present */
-
-
         VennMaker.getInstance().createConfigDialogLayer();
         validateIconFolders();
         createVennMakerFolders();
@@ -2188,74 +2185,51 @@ public class VennMaker extends JFrame {
         if(argsAreValid(args)) {
             processArgs(args);
         } else {
-            StartChooser sc = new StartChooser();
-            sc.setVisible(true);
-            if (sc.isClosedWithoutDecision()) {
-                VennMaker.exit();
-            }
-            // configuring = sc.isConfiguring();
-            startMode = sc.getStartMode();
+            startMode = showStartChooserAndGetStartMode();
         }
 
-		/*
-		 * Wenn die Konfigurationsoberfläche nicht gestartet werden soll, starte
-		 * direkt mit dem VennMaker-Hauptfenster.
-		 */
-        if (startMode == StartChooser.FREE_DRAWING) {
-            showMainWindow();
-        } else if (startMode == StartChooser.LOAD_CONFIGURATION_FOR_EDIT
-                || startMode == StartChooser.PERFORM_INTERVIEW
-                || startMode == StartChooser.CREATE_QUESTIONAIRE
-                || startMode == StartChooser.EDIT_TEMPLATE) {
+        startVennMakerInSelectedMode(startMode);
+    }
 
-            showMainWindow();
+    private static int showStartChooserAndGetStartMode() {
+        StartChooser sc = new StartChooser();
+        sc.setVisible(true);
+        if (sc.isClosedWithoutDecision()) {
+            VennMaker.exit();
+        }
+        return sc.getStartMode();
+    }
 
-            final int mode = startMode;
+    private static void startVennMakerInSelectedMode(final int startMode) {
+        showMainWindow();
+        if(startMode != StartChooser.FREE_DRAWING) {
+            SwingUtilities.invokeLater(() -> selectNonFreeDrawingMode(startMode));
+        }
+    }
 
-            SwingUtilities.invokeLater(new Runnable() {
+    private static void selectNonFreeDrawingMode(int mode) {
+        if (mode == StartChooser.PERFORM_INTERVIEW) {
+            ConfigDialog.getInstance().showLoadTemplateDialog(true);
+        }
 
-                @Override
-                public void run() {
+        if (mode == StartChooser.CREATE_QUESTIONAIRE) {
+            ConfigDialog diag = new ConfigDialog(
+                    CDialogInterviewCreator.class, true);
+        }
 
-                    if (mode == StartChooser.PERFORM_INTERVIEW) {
-                        ConfigDialog.getInstance().showLoadTemplateDialog(true);
-                    }
+        if (mode == StartChooser.LOAD_CONFIGURATION_FOR_EDIT) {
+            ConfigDialog diag = new ConfigDialog(
+                    CDialogInterviewCreator.class, false);
 
-                    if (mode == StartChooser.CREATE_QUESTIONAIRE) {
-                        ConfigDialog diag = new ConfigDialog(
-                                CDialogInterviewCreator.class, true);
-                    }
+            if (diag.showLoadTemplateDialog(false) == IO.OPERATION_SUCCEEDED)
+                diag.setVisible(true);
+        }
 
-                    if (mode == StartChooser.LOAD_CONFIGURATION_FOR_EDIT) {
-                        ConfigDialog diag = new ConfigDialog(
-                                CDialogInterviewCreator.class, false);
+        if (mode == StartChooser.EDIT_TEMPLATE) {
+            ConfigDialog diag = new ConfigDialog(null, false);
 
-                        if (diag.showLoadTemplateDialog(false) == IO.OPERATION_SUCCEEDED)
-                            diag.setVisible(true);
-                    }
-
-                    if (mode == StartChooser.EDIT_TEMPLATE) {
-                        ConfigDialog diag = new ConfigDialog(null, false);
-
-                        if (diag.showLoadTemplateDialog(false) == IO.OPERATION_SUCCEEDED)
-                            diag.setVisible(true);
-                    }
-
-                }
-            });
-        } else if (startMode == StartChooser.LOAD_PROJECT) {
-            showMainWindow();
-
-            OpenFileDialog chooser = new OpenFileDialog();
-            chooser.show();
-
-            if (chooser.getFilename() == null || chooser.getFilename().equals(""))
-                return;
-
-            FileOperations.openVmpFile(chooser.getVmpFile(),
-                    chooser.getFilename(), chooser.getLastVisitedDirectory());
-
-            VennMaker.getInstance().refresh();
+            if (diag.showLoadTemplateDialog(false) == IO.OPERATION_SUCCEEDED)
+                diag.setVisible(true);
         }
     }
 
