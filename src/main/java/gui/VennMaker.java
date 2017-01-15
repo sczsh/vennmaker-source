@@ -2175,146 +2175,23 @@ public class VennMaker extends JFrame {
         Locale.setDefault(Locale.ENGLISH);
 
         /** test the folders, if every needed one is present */
-        String missingFolders = FileOperations.getMissingFolders();
-        if (!missingFolders.equals("")) {
-            JOptionPane.showMessageDialog(
-                    null,
-                    Messages.getString("VennMaker.MissingFolders.1")
-                            + missingFolders
-                            + Messages.getString("VennMaker.MissingFolders.2"),
-                    Messages.getString("VennMaker.MissingFoldersTitle"),
-                    JOptionPane.ERROR_MESSAGE);
-            VennMaker.exit();
-        }
+
 
         VennMaker.getInstance().createConfigDialogLayer();
-
-        File folder = new File(VMPaths.getCurrentWorkingRoot()); //$NON-NLS-1$ //$NON-NLS-2$
-        folder.mkdirs();
-        File tempProjects = new File(VMPaths.getCurrentWorkingDirectory());
-        tempProjects.mkdir();
-        FileOperations.createSubfolders(tempProjects.getAbsolutePath());
-
+        validateIconFolders();
+        createVennMakerFolders();
         loadPlugins();
-
-        // -------------------------
-
-		/*
-		 * Testzeitraum einstellen und das Einschraenkunglevel einstellen.
-		 */
-        //TestVersion.setTime(VERSION, "2017-01-01 00:00:00.1");
-        //TestVersion.setLogoON();
-        // TestVersion.setExportOFF();
-
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            // UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
-
-        } catch (ClassNotFoundException exn) {
-            exn.printStackTrace();
-        } catch (InstantiationException exn) {
-            exn.printStackTrace();
-        } catch (IllegalAccessException exn) {
-            exn.printStackTrace();
-        } catch (UnsupportedLookAndFeelException exn) {
-            exn.printStackTrace();
-        }
+        setUIManager();
 
         int startMode = -1;
 
-        boolean configuring = false;
-        if (args.length == 1) {
-            // Wenn Kommandozeilenparrameter gegeben, untersuche Dateinamen
-            String fileName = args[0];
-
-            if (fileName.endsWith(Messages.getString("VennMaker.ConfigSuffix"))) //$NON-NLS-1$
-            {
-                // lade Config-Datei
-                try {
-                    Config c = Config.load(fileName);
-                    VennMaker.getInstance().setConfig(c);
-                    VennMaker.getInstance().setTitle(
-                            Messages.getString("VennMaker.VennMaker") + VERSION); //$NON-NLS-1$
-                } catch (FileNotFoundException exn) {
-                    JOptionPane
-                            .showMessageDialog(
-                                    VennMaker.getInstance(),
-                                    Messages.getString("VennMaker.File_notFound") //$NON-NLS-1$
-                                            + exn.getLocalizedMessage(),
-                                    Messages.getString("VennMaker.Error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
-                } catch (IOException exn) {
-                    JOptionPane
-                            .showMessageDialog(
-                                    VennMaker.getInstance(),
-                                    Messages.getString("VennMaker.IO-Error") //$NON-NLS-1$
-                                            + exn.getLocalizedMessage(),
-                                    Messages.getString("VennMaker.Error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
-                } catch (ConversionException exn) {
-                    JOptionPane
-                            .showMessageDialog(
-                                    null,
-                                    "Die Datei wurde mit einer alten Version von VennMaker erstellt und kann nicht geöffnet werden.\n\n" //$NON-NLS-1$
-                                            + exn.getLocalizedMessage(),
-                                    Messages.getString("VennMaker.Error"), //$NON-NLS-1$
-                                    JOptionPane.ERROR_MESSAGE);
-                }
-            }
-			/* load template, when parameter defines one */
-            else if (fileName.endsWith(".vmt")) {
-                showMainWindow();
-
-                File openFile = new File(fileName);
-                ConfigDialog.getInstance().setLastTemplateLocation(
-                        openFile.getParentFile().getAbsolutePath());
-
-                TemplateBackgroundOperations tbo = new TemplateBackgroundOperations(
-                        openFile, VennMaker.getInstance(), true,
-                        TemplateOperation.LOAD);
-                tbo.startAction();
-
-            } else if (fileName.endsWith(Messages.getString("VennMaker.Suffix"))) //$NON-NLS-1$
-            {
-                Projekt p = Projekt.load(fileName);
-                if (p == null)
-                    JOptionPane.showMessageDialog(null,
-                            Messages.getString("VennMaker.ErrorLoading") //$NON-NLS-1$
-                                    + fileName, Messages.getString("VennMaker.Error"), //$NON-NLS-1$
-                            JOptionPane.ERROR_MESSAGE);
-                else {
-                    VennMaker.getInstance().setTitle(
-                            Messages.getString("VennMaker.VennMaker") + VERSION + " [" //$NON-NLS-1$ //$NON-NLS-2$
-                                    + fileName + "]"); //$NON-NLS-1$
-                    VennMaker.getInstance().setProjekt(p);
-                    // VennMaker.getInstance().resetUndoRedoControls();
-
-                    /**
-                     * Verlinkungen aktualisieren
-                     */
-                    VennMaker.getInstance().setCurrentWorkingDirectory(
-                            new File(fileName).getParent());
-                    FileOperations.changeRootFolder(VMPaths
-                            .getCurrentWorkingDirectory());
-
-
-                    loadModuleData();
-                }
-
-                showMainWindow();
-            } else
-
-            {
-                showMainWindow();
-				/* vmp project */
-                // FileOperations.openVmpFile(new File(fileName), fileName,
-                // fileName)
-                openVMPFileArgument(fileName);
-            }
+        if(argsAreValid(args)) {
+            processArgs(args);
         } else {
             StartChooser sc = new StartChooser();
             sc.setVisible(true);
             if (sc.isClosedWithoutDecision()) {
-                System.exit(0); // Möglicherweise kommt bald mal ein anderer
-                // Fehlercode
+                VennMaker.exit();
             }
             // configuring = sc.isConfiguring();
             startMode = sc.getStartMode();
@@ -2380,6 +2257,139 @@ public class VennMaker extends JFrame {
 
             VennMaker.getInstance().refresh();
         }
+    }
+
+    private static void validateIconFolders() {
+        String missingFolders = FileOperations.getMissingFolders();
+        if (!missingFolders.equals("")) {
+            JOptionPane.showMessageDialog(
+                    null,
+                    Messages.getString("VennMaker.MissingFolders.1")
+                            + missingFolders
+                            + Messages.getString("VennMaker.MissingFolders.2"),
+                    Messages.getString("VennMaker.MissingFoldersTitle"),
+                    JOptionPane.ERROR_MESSAGE);
+            VennMaker.exit();
+        }
+    }
+
+    private static void createVennMakerFolders() {
+        File folder = new File(VMPaths.getCurrentWorkingRoot()); //$NON-NLS-1$ //$NON-NLS-2$
+        folder.mkdirs();
+        File tempProjects = new File(VMPaths.getCurrentWorkingDirectory());
+        tempProjects.mkdir();
+        FileOperations.createSubfolders(tempProjects.getAbsolutePath());
+    }
+
+    private static void setUIManager() {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (ClassNotFoundException exn) {
+            exn.printStackTrace();
+        } catch (InstantiationException exn) {
+            exn.printStackTrace();
+        } catch (IllegalAccessException exn) {
+            exn.printStackTrace();
+        } catch (UnsupportedLookAndFeelException exn) {
+            exn.printStackTrace();
+        }
+    }
+
+    private static void processArgs(String[] args) {
+        String filename = args[0];
+        if (filename.endsWith(".vmt")) {
+            loadVennMakerFromVMTFile(filename);
+        } else if(filename.endsWith("venn")) {
+            loadVennMakerFromVennFile(filename);
+        } else if(filename.endsWith("vennEn")) {
+            loadVennMakerFromVennEnFile(filename);
+        } else{
+            loadVennMakerFromVMPFile(filename);
+        }
+    }
+
+    private static void loadVennMakerFromVMPFile(String fileName) {
+        showMainWindow();
+        openVMPFileArgument(fileName);
+    }
+
+    private static void loadVennMakerFromVennEnFile(String fileName) {
+        // lade Config-Datei
+        try {
+            Config c = Config.load(fileName);
+            VennMaker.getInstance().setConfig(c);
+            VennMaker.getInstance().setTitle(
+                    Messages.getString("VennMaker.VennMaker") + VERSION); //$NON-NLS-1$
+        } catch (FileNotFoundException exn) {
+            JOptionPane
+                    .showMessageDialog(
+                            VennMaker.getInstance(),
+                            Messages.getString("VennMaker.File_notFound") //$NON-NLS-1$
+                                    + exn.getLocalizedMessage(),
+                            Messages.getString("VennMaker.Error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
+        } catch (IOException exn) {
+            JOptionPane
+                    .showMessageDialog(
+                            VennMaker.getInstance(),
+                            Messages.getString("VennMaker.IO-Error") //$NON-NLS-1$
+                                    + exn.getLocalizedMessage(),
+                            Messages.getString("VennMaker.Error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
+        } catch (ConversionException exn) {
+            JOptionPane
+                    .showMessageDialog(
+                            null,
+                            "Die Datei wurde mit einer alten Version von VennMaker erstellt und kann nicht geöffnet werden.\n\n" //$NON-NLS-1$
+                                    + exn.getLocalizedMessage(),
+                            Messages.getString("VennMaker.Error"), //$NON-NLS-1$
+                            JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private static void loadVennMakerFromVennFile(String fileName) {
+        Projekt p = Projekt.load(fileName);
+        if (p == null)
+            JOptionPane.showMessageDialog(null,
+                    Messages.getString("VennMaker.ErrorLoading") //$NON-NLS-1$
+                            + fileName, Messages.getString("VennMaker.Error"), //$NON-NLS-1$
+                    JOptionPane.ERROR_MESSAGE);
+        else {
+            VennMaker.getInstance().setTitle(
+                    Messages.getString("VennMaker.VennMaker") + VERSION + " [" //$NON-NLS-1$ //$NON-NLS-2$
+                            + fileName + "]"); //$NON-NLS-1$
+            VennMaker.getInstance().setProjekt(p);
+            // VennMaker.getInstance().resetUndoRedoControls();
+
+            /**
+             * Verlinkungen aktualisieren
+             */
+            VennMaker.getInstance().setCurrentWorkingDirectory(
+                    new File(fileName).getParent());
+            FileOperations.changeRootFolder(VMPaths
+                    .getCurrentWorkingDirectory());
+
+
+            loadModuleData();
+        }
+
+        showMainWindow();
+    }
+
+    private static void loadVennMakerFromVMTFile(String fileName) {
+        showMainWindow();
+
+        File openFile = new File(fileName);
+        ConfigDialog.getInstance().setLastTemplateLocation(
+                openFile.getParentFile().getAbsolutePath());
+
+        TemplateBackgroundOperations tbo = new TemplateBackgroundOperations(
+                openFile, VennMaker.getInstance(), true,
+                TemplateOperation.LOAD);
+        tbo.startAction();
+    }
+
+
+    private static boolean argsAreValid(String[] args) {
+        return args.length == 1 && (args[0].endsWith(".vmt") || args[0].endsWith(".vennEn"));
     }
 
     /**
@@ -2467,36 +2477,6 @@ public class VennMaker extends JFrame {
             if (file != null) {
                 FileOperations.openVmpFile(vmpFile, file.getAbsolutePath(),
                         rootFolder);
-
-                // Projekt p = Projekt.load(file.getAbsolutePath());
-                // if (p == null)
-                // {
-                // JOptionPane.showMessageDialog(null,
-                //							Messages.getString("VennMaker.ErrorLoading") //$NON-NLS-1$
-                //									+ fileName, Messages.getString("VennMaker.Error"), //$NON-NLS-1$
-                // JOptionPane.ERROR_MESSAGE);
-                // exit();
-                // }
-                // else
-                // {
-                //
-                // VennMaker.getInstance().setProjekt(p);
-                // // VennMaker.getInstance().resetUndoRedoControls();
-                //
-                // /**
-                // * Verlinkungen aktualisieren
-                // */
-                // VennMaker.getInstance().setCurrentWorkingDirectory(
-                // file.getParent());
-                // FileOperations.changeRootFolder(VMPaths
-                // .getCurrentWorkingDirectory());
-                //
-                // VMPaths.setLastFileName(file.getAbsolutePath());
-                //
-                // VennMaker.getInstance().setTitle(
-                //							Messages.getString("VennMaker.VennMaker") + VERSION + " [" //$NON-NLS-1$ //$NON-NLS-2$
-                //									+ vmpFile.toString() + "]"); //$NON-NLS-1$
-                // }
             } else {
                 exit();
             }
