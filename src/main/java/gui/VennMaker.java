@@ -2125,6 +2125,15 @@ public class VennMaker extends JFrame {
      * @param args
      */
     public static void main(String[] args) {
+
+        StartMode startMode = StartMode.FREE_DRAWING;
+
+        if(argsAreValid(args)) {
+            processArgs(args);
+        } else {
+            startMode = showStartChooserAndGetStartMode();
+        }
+
         Thread.setDefaultUncaughtExceptionHandler(new ErrorUncaughtExceptionHandler());
 
         Locale.setDefault(Locale.ENGLISH);
@@ -2135,18 +2144,10 @@ public class VennMaker extends JFrame {
         loadPlugins();
         setUIManager();
 
-        int startMode = -1;
-
-        if(argsAreValid(args)) {
-            processArgs(args);
-        } else {
-            startMode = showStartChooserAndGetStartMode();
-        }
-
         startVennMakerInSelectedMode(startMode);
     }
 
-    private static int showStartChooserAndGetStartMode() {
+    private static StartMode showStartChooserAndGetStartMode() {
         StartChooser sc = new StartChooser();
         sc.setVisible(true);
         if (sc.isClosedWithoutDecision()) {
@@ -2155,10 +2156,10 @@ public class VennMaker extends JFrame {
         return sc.getStartMode();
     }
 
-    private static void startVennMakerInSelectedMode(final int startMode) {
+    private static void startVennMakerInSelectedMode(final StartMode startMode) {
         showMainWindow();
 
-        if(startMode == StartChooser.LOAD_PROJECT) {
+        if(startMode.equals(StartMode.LOAD_PROJECT)) {
             loadProject();
         } else {
             SwingUtilities.invokeLater(() -> selectNonFreeDrawingMode(startMode));
@@ -2179,25 +2180,19 @@ public class VennMaker extends JFrame {
         VennMaker.getInstance().refresh();
     }
 
-    private static void selectNonFreeDrawingMode(int mode) {
-        if (mode == StartChooser.PERFORM_INTERVIEW) {
+    private static void selectNonFreeDrawingMode(StartMode mode) {
+        if (mode.equals(StartMode.PERFORM_INTERVIEW)) {
             ConfigDialog.getInstance().showLoadTemplateDialog(true);
-        }
-
-        if (mode == StartChooser.CREATE_QUESTIONAIRE) {
+        } else if (mode.equals(StartMode.CREATE_QUESTIONAIRE)) {
             ConfigDialog diag = new ConfigDialog(
                     CDialogInterviewCreator.class, true);
-        }
-
-        if (mode == StartChooser.LOAD_CONFIGURATION_FOR_EDIT) {
+        } else if (mode.equals(StartMode.LOAD_CONFIGURATION_FOR_EDIT)) {
             ConfigDialog diag = new ConfigDialog(
                     CDialogInterviewCreator.class, false);
 
             if (diag.showLoadTemplateDialog(false) == IO.OPERATION_SUCCEEDED)
                 diag.setVisible(true);
-        }
-
-        if (mode == StartChooser.EDIT_TEMPLATE) {
+        } else if (mode.equals(StartMode.EDIT_TEMPLATE)) {
             ConfigDialog diag = new ConfigDialog(null, false);
 
             if (diag.showLoadTemplateDialog(false) == IO.OPERATION_SUCCEEDED)
@@ -2230,13 +2225,7 @@ public class VennMaker extends JFrame {
     private static void setUIManager() {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (ClassNotFoundException exn) {
-            exn.printStackTrace();
-        } catch (InstantiationException exn) {
-            exn.printStackTrace();
-        } catch (IllegalAccessException exn) {
-            exn.printStackTrace();
-        } catch (UnsupportedLookAndFeelException exn) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException exn) {
             exn.printStackTrace();
         }
     }

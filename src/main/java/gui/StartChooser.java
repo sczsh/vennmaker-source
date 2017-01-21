@@ -24,22 +24,6 @@ import java.util.Map;
 public class StartChooser extends JDialog implements ActionListener,
         WindowListener {
 
-    public static final int FREE_DRAWING = 0;
-
-    public static final int LOAD_CONFIGURATION_FOR_EDIT = 1;
-
-    public static final int PERFORM_INTERVIEW = 2;
-
-    public static final int LOAD_PROJECT = 3;
-
-    public static final int LOAD_CONFIGURATION = 4;
-
-    public static final int UPDATE = 5;
-
-    public static final int CREATE_QUESTIONAIRE = 6;
-
-    public static final int EDIT_TEMPLATE = 7;
-
     /**
      * standard spacing height in between buttons
      */
@@ -60,7 +44,7 @@ public class StartChooser extends JDialog implements ActionListener,
 
     private JComboBox languagesCombo;
 
-    private int selectedMode;
+    private StartMode selectedMode;
 
     /**
      * HashMap, containing all buttons / items, which need to be refreshed, when
@@ -450,47 +434,34 @@ public class StartChooser extends JDialog implements ActionListener,
                 e.printStackTrace();
             }
 
-            selectedMode = UPDATE;
-        }
-
-        if ("admin".equals(event.getActionCommand())) { //$NON-NLS-1$
+            selectedMode = StartMode.UPDATE;
+        } else if ("admin".equals(event.getActionCommand())) { //$NON-NLS-1$
+            selectedMode = StartMode.FREE_DRAWING;
             closedWithoutDecision = false;
             this.dispose();
         } else if ("configure".equals(event.getActionCommand())) { //$NON-NLS-1$
             closedWithoutDecision = false;
             configuring = true;
-
-            selectedMode = LOAD_CONFIGURATION_FOR_EDIT;
-
-            this.dispose();
+            selectedMode = StartMode.LOAD_CONFIGURATION_FOR_EDIT;
         } else if ("createQuestionaire".equals(event.getActionCommand())) {
             closedWithoutDecision = false;
-
-            selectedMode = CREATE_QUESTIONAIRE;
-
-            this.dispose();
+            selectedMode = StartMode.CREATE_QUESTIONAIRE;
         } else if ("editTemplate".equals(event.getActionCommand())) {
             closedWithoutDecision = false;
-
-            selectedMode = EDIT_TEMPLATE;
-
-            this.dispose();
+            selectedMode = StartMode.EDIT_TEMPLATE;
         } else if ("interview".equals(event.getActionCommand())) {
             closedWithoutDecision = false;
-
-            selectedMode = PERFORM_INTERVIEW;
-
+            selectedMode = StartMode.PERFORM_INTERVIEW;
             this.dispose();
         } else if ("openVmp".equals(event.getActionCommand())) {
             closedWithoutDecision = false;
-
-            selectedMode = LOAD_PROJECT;
-
-            this.dispose();
+            selectedMode = StartMode.LOAD_PROJECT;
         }
+
+        this.dispose();
     }
 
-    public int getStartMode() {
+    public StartMode getStartMode() {
         return selectedMode;
     }
 
