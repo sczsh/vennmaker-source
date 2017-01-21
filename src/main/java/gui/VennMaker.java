@@ -4,6 +4,7 @@
  */
 package gui;
 
+import com.vennmaker.Version;
 import com.thoughtworks.xstream.converters.ConversionException;
 import data.*;
 import data.AttributeType.Scope;
@@ -44,6 +45,7 @@ import org.jvnet.flamingo.common.icon.ResizableIcon;
 import org.jvnet.flamingo.ribbon.JRibbon;
 import org.jvnet.flamingo.ribbon.RibbonTask;
 import org.jvnet.flamingo.svg.SvgBatikResizableIcon;
+import util.Environment;
 import wizards.WizardController;
 
 import javax.swing.*;
@@ -51,18 +53,11 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.dnd.*;
 import java.awt.event.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
 
@@ -188,7 +183,7 @@ public class VennMaker extends JFrame {
      */
     private JPanel nextPanel;
 
-    public static String VERSION = "2.0.0";                            //$NON-NLS-1$
+    public static String VERSION = Version.VENNMAKER_VERSION;                            //$NON-NLS-1$
 
     public static int internVERSION = 2000000;                                        // e.g.
     // 1
@@ -249,28 +244,15 @@ public class VennMaker extends JFrame {
 
     private String exportDefaultPath = "";
 
-    private static ArrayList<IModule> module = new ArrayList<IModule>();
+    private static List<IModule> module = new ArrayList<>();
 
     /**
      * Get module
      *
      * @return IModule
      */
-    public ArrayList<IModule> getModule() {
+    public List<IModule> getModule() {
         return this.module;
-    }
-
-    /**
-     * Set plugin modules
-     *
-     * @param module
-     */
-    public static void setModule(IModule m) {
-        System.out.println("---------------------");
-        System.out.println("Modul: " + m.getModuleName());
-        System.out.println("Version: " + m.getVersion());
-
-        module.add(m);
     }
 
     public static VennMaker getInstance() {
@@ -343,60 +325,14 @@ public class VennMaker extends JFrame {
     private VennMaker() {
         super(Messages.getString("VennMaker.VennMaker") + VERSION); //$NON-NLS-1$
 
-        // ergaenze Versionsangabe um Revision
-        try {
-            // versuche Revision aus Datei zu lesen
-            BufferedReader versionFile = new BufferedReader(new FileReader(
-                    Messages.getString("VennMaker.Version")));//$NON-NLS-1$
-            REVISION += " " + versionFile.readLine(); //$NON-NLS-1$
-        } catch (IOException e) {
-            // Fallback via svn:keywords
-            REVISION += " $Rev: 1435 $"; //$NON-NLS-1$
-        }
-
-        // Listener-Listen initialisieren
-        netzwerkChangeListeners = new LinkedList<VennListener>();
-        uncaughtExceptionListeners = new ArrayList<UncaughtExceptionListener>();
+        netzwerkChangeListeners = new LinkedList<>();
+        uncaughtExceptionListeners = new ArrayList<>();
 
         // Audiorecorder stoppen
         MediaEventList.getInstance().notify(
                 new MediaEvent(this, new MediaObject(MediaObject.STOP)));
 
-        // WindowListener zum Ueberpruefen ungespeicherter Daten
-        this.addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent ev) {
-
-                // Bei ungespeicherten Daten nachfragen, ob gespeichert werden
-                // soll
-                if (!VennMaker.getInstance().isChangesSaved())
-                    switch (JOptionPane.showConfirmDialog(null,
-                            Messages.getString("VennMaker.ConfirmQuit"), Messages //$NON-NLS-1$
-                                    .getString("VennMaker.ConfirmQuitTitel"), //$NON-NLS-1$
-                            JOptionPane.YES_NO_CANCEL_OPTION)) {
-
-                        // zurueck zu Vennmaker
-                        case JOptionPane.CANCEL_OPTION:
-                            break;
-
-                        case JOptionPane.CLOSED_OPTION:
-                            break;
-
-                        // VennMaker ohne Speichern verlassen
-                        case JOptionPane.NO_OPTION:
-                            exitVennMaker();
-                            break;
-
-                        // Speicherdialog vorm Beenden aufrufen
-                        default:
-                            if (IO.save() == 1) {
-                                exitVennMaker();
-                            }
-                    }
-                else
-                    exitVennMaker();
-            }
-        });
-
+        this.addWindowListener(new VennMakerWindowCloseListener<Void>(cb -> exitVennMaker()));
         this.projekt = new Projekt();
         config = new Config();
     }
@@ -2086,61 +2022,6 @@ public class VennMaker extends JFrame {
     }
 
     /**
-     * Alle Plugins im Verzeichnis Module laden
-     */
-    private static void loadPlugins() {
-
-        String currentRelativePath = Paths.get("").toAbsolutePath().toString();
-
-        String modulPath = currentRelativePath + "/module/";
-
-        String[] entries = new File(modulPath).list();
-
-        if (entries != null)
-            for (String moduleDateiName : entries) {
-                if (moduleDateiName.endsWith(".jar")) {
-
-                    File f = new File(modulPath + moduleDateiName);
-
-                    String modulName = moduleDateiName.substring(0,
-                            moduleDateiName.indexOf(".jar"));
-
-                    URLClassLoader classLoader;
-                    try {
-                        classLoader = new URLClassLoader(
-                                new URL[]{f.toURI().toURL()},
-                                ClassLoader.getSystemClassLoader());
-                        Class moduleC;
-                        try {
-                            /**
-                             * Namenskonvention: Der Packetname ist gleich dem Modulname
-                             * (z.B. vennmakerhist = vennmakerhist.jar) Main Klasse heisst
-                             * immer Main (Achtung: grosses M)
-                             */
-                            moduleC = classLoader.loadClass("de.vennmakermodule."
-                                    + modulName + ".Main");
-                            setModule((IModule) moduleC.newInstance());
-
-                        } catch (ClassNotFoundException e) {
-
-                            System.out.println("Module: " + e);
-                        } catch (InstantiationException e) {
-                            System.out.println("Module: " + e);
-                        } catch (IllegalAccessException e) {
-                            System.out.println("Module: " + e);
-                        }
-                    } catch (MalformedURLException e1) {
-                        // TODO Auto-generated catch block
-                        e1.printStackTrace();
-                    }
-
-                }
-            }
-
-    }
-
-
-    /**
      * Load and set the PluginModule configuration from the vmp file
      */
     private static void loadModuleData() {
@@ -2170,216 +2051,168 @@ public class VennMaker extends JFrame {
      * @param args
      */
     public static void main(String[] args) {
-        Thread.setDefaultUncaughtExceptionHandler(new ErrorUncaughtExceptionHandler());
 
-        Locale.setDefault(Locale.ENGLISH);
+        StartMode startMode = StartMode.FREE_DRAWING;
 
-        /** test the folders, if every needed one is present */
-        String missingFolders = FileOperations.getMissingFolders();
-        if (!missingFolders.equals("")) {
-            JOptionPane.showMessageDialog(
-                    null,
-                    Messages.getString("VennMaker.MissingFolders.1")
-                            + missingFolders
-                            + Messages.getString("VennMaker.MissingFolders.2"),
-                    Messages.getString("VennMaker.MissingFoldersTitle"),
-                    JOptionPane.ERROR_MESSAGE);
+        if(argsAreValid(args)) {
+            processArgs(args);
+        } else {
+            startMode = showStartChooserAndGetStartMode();
+        }
+
+        Environment.initializeWorkspace();
+        module = Environment.loadPlugins();
+        startVennMakerInSelectedMode(startMode);
+    }
+
+    private static StartMode showStartChooserAndGetStartMode() {
+        StartChooser sc = new StartChooser();
+        sc.setVisible(true);
+        if (sc.isClosedWithoutDecision()) {
             VennMaker.exit();
         }
+        return sc.getStartMode();
+    }
 
-        VennMaker.getInstance().createConfigDialogLayer();
+    private static void startVennMakerInSelectedMode(final StartMode startMode) {
+        showMainWindow();
 
-        File folder = new File(VMPaths.getCurrentWorkingRoot()); //$NON-NLS-1$ //$NON-NLS-2$
-        folder.mkdirs();
-        File tempProjects = new File(VMPaths.getCurrentWorkingDirectory());
-        tempProjects.mkdir();
-        FileOperations.createSubfolders(tempProjects.getAbsolutePath());
-
-        loadPlugins();
-
-        // -------------------------
-
-		/*
-		 * Testzeitraum einstellen und das Einschraenkunglevel einstellen.
-		 */
-        //TestVersion.setTime(VERSION, "2017-01-01 00:00:00.1");
-        //TestVersion.setLogoON();
-        // TestVersion.setExportOFF();
-
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            // UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
-
-        } catch (ClassNotFoundException exn) {
-            exn.printStackTrace();
-        } catch (InstantiationException exn) {
-            exn.printStackTrace();
-        } catch (IllegalAccessException exn) {
-            exn.printStackTrace();
-        } catch (UnsupportedLookAndFeelException exn) {
-            exn.printStackTrace();
-        }
-
-        int startMode = -1;
-
-        boolean configuring = false;
-        if (args.length == 1) {
-            // Wenn Kommandozeilenparrameter gegeben, untersuche Dateinamen
-            String fileName = args[0];
-
-            if (fileName.endsWith(Messages.getString("VennMaker.ConfigSuffix"))) //$NON-NLS-1$
-            {
-                // lade Config-Datei
-                try {
-                    Config c = Config.load(fileName);
-                    VennMaker.getInstance().setConfig(c);
-                    VennMaker.getInstance().setTitle(
-                            Messages.getString("VennMaker.VennMaker") + VERSION); //$NON-NLS-1$
-                } catch (FileNotFoundException exn) {
-                    JOptionPane
-                            .showMessageDialog(
-                                    VennMaker.getInstance(),
-                                    Messages.getString("VennMaker.File_notFound") //$NON-NLS-1$
-                                            + exn.getLocalizedMessage(),
-                                    Messages.getString("VennMaker.Error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
-                } catch (IOException exn) {
-                    JOptionPane
-                            .showMessageDialog(
-                                    VennMaker.getInstance(),
-                                    Messages.getString("VennMaker.IO-Error") //$NON-NLS-1$
-                                            + exn.getLocalizedMessage(),
-                                    Messages.getString("VennMaker.Error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
-                } catch (ConversionException exn) {
-                    JOptionPane
-                            .showMessageDialog(
-                                    null,
-                                    "Die Datei wurde mit einer alten Version von VennMaker erstellt und kann nicht geöffnet werden.\n\n" //$NON-NLS-1$
-                                            + exn.getLocalizedMessage(),
-                                    Messages.getString("VennMaker.Error"), //$NON-NLS-1$
-                                    JOptionPane.ERROR_MESSAGE);
-                }
-            }
-			/* load template, when parameter defines one */
-            else if (fileName.endsWith(".vmt")) {
-                showMainWindow();
-
-                File openFile = new File(fileName);
-                ConfigDialog.getInstance().setLastTemplateLocation(
-                        openFile.getParentFile().getAbsolutePath());
-
-                TemplateBackgroundOperations tbo = new TemplateBackgroundOperations(
-                        openFile, VennMaker.getInstance(), true,
-                        TemplateOperation.LOAD);
-                tbo.startAction();
-
-            } else if (fileName.endsWith(Messages.getString("VennMaker.Suffix"))) //$NON-NLS-1$
-            {
-                Projekt p = Projekt.load(fileName);
-                if (p == null)
-                    JOptionPane.showMessageDialog(null,
-                            Messages.getString("VennMaker.ErrorLoading") //$NON-NLS-1$
-                                    + fileName, Messages.getString("VennMaker.Error"), //$NON-NLS-1$
-                            JOptionPane.ERROR_MESSAGE);
-                else {
-                    VennMaker.getInstance().setTitle(
-                            Messages.getString("VennMaker.VennMaker") + VERSION + " [" //$NON-NLS-1$ //$NON-NLS-2$
-                                    + fileName + "]"); //$NON-NLS-1$
-                    VennMaker.getInstance().setProjekt(p);
-                    // VennMaker.getInstance().resetUndoRedoControls();
-
-                    /**
-                     * Verlinkungen aktualisieren
-                     */
-                    VennMaker.getInstance().setCurrentWorkingDirectory(
-                            new File(fileName).getParent());
-                    FileOperations.changeRootFolder(VMPaths
-                            .getCurrentWorkingDirectory());
-
-
-                    loadModuleData();
-                }
-
-                showMainWindow();
-            } else
-
-            {
-                showMainWindow();
-				/* vmp project */
-                // FileOperations.openVmpFile(new File(fileName), fileName,
-                // fileName)
-                openVMPFileArgument(fileName);
-            }
+        if(startMode.equals(StartMode.LOAD_PROJECT)) {
+            loadProject();
         } else {
-            StartChooser sc = new StartChooser();
-            sc.setVisible(true);
-            if (sc.isClosedWithoutDecision()) {
-                System.exit(0); // Möglicherweise kommt bald mal ein anderer
-                // Fehlercode
-            }
-            // configuring = sc.isConfiguring();
-            startMode = sc.getStartMode();
+            SwingUtilities.invokeLater(() -> selectNonFreeDrawingMode(startMode));
+        }
+    }
+
+    private static void loadProject() {
+        showMainWindow();
+        OpenFileDialog chooser = new OpenFileDialog();
+        chooser.show();
+
+        if (chooser.getFilename() == null || chooser.getFilename().equals(""))
+            return;
+
+        FileOperations.openVmpFile(chooser.getVmpFile(),
+                chooser.getFilename(), chooser.getLastVisitedDirectory());
+
+        VennMaker.getInstance().refresh();
+    }
+
+    private static void selectNonFreeDrawingMode(StartMode mode) {
+        if (mode.equals(StartMode.PERFORM_INTERVIEW)) {
+            ConfigDialog.getInstance().showLoadTemplateDialog(true);
+        } else if (mode.equals(StartMode.CREATE_QUESTIONAIRE)) {
+            ConfigDialog diag = new ConfigDialog(
+                    CDialogInterviewCreator.class, true);
+        } else if (mode.equals(StartMode.LOAD_CONFIGURATION_FOR_EDIT)) {
+            ConfigDialog diag = new ConfigDialog(
+                    CDialogInterviewCreator.class, false);
+
+            if (diag.showLoadTemplateDialog(false) == IO.OPERATION_SUCCEEDED)
+                diag.setVisible(true);
+        } else if (mode.equals(StartMode.EDIT_TEMPLATE)) {
+            ConfigDialog diag = new ConfigDialog(null, false);
+
+            if (diag.showLoadTemplateDialog(false) == IO.OPERATION_SUCCEEDED)
+                diag.setVisible(true);
+        }
+    }
+
+    private static void processArgs(String[] args) {
+        String filename = args[0];
+        if (filename.endsWith(".vmt")) {
+            loadVennMakerFromVMTFile(filename);
+        } else if(filename.endsWith("venn")) {
+            loadVennMakerFromVennFile(filename);
+        } else if(filename.endsWith("vennEn")) {
+            loadVennMakerFromVennEnFile(filename);
+        } else{
+            loadVennMakerFromVMPFile(filename);
+        }
+    }
+
+    private static void loadVennMakerFromVMPFile(String fileName) {
+        showMainWindow();
+        openVMPFileArgument(fileName);
+    }
+
+    private static void loadVennMakerFromVennEnFile(String fileName) {
+        // lade Config-Datei
+        try {
+            Config c = Config.load(fileName);
+            VennMaker.getInstance().setConfig(c);
+            VennMaker.getInstance().setTitle(
+                    Messages.getString("VennMaker.VennMaker") + VERSION); //$NON-NLS-1$
+        } catch (FileNotFoundException exn) {
+            JOptionPane
+                    .showMessageDialog(
+                            VennMaker.getInstance(),
+                            Messages.getString("VennMaker.File_notFound") //$NON-NLS-1$
+                                    + exn.getLocalizedMessage(),
+                            Messages.getString("VennMaker.Error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
+        } catch (IOException exn) {
+            JOptionPane
+                    .showMessageDialog(
+                            VennMaker.getInstance(),
+                            Messages.getString("VennMaker.IO-Error") //$NON-NLS-1$
+                                    + exn.getLocalizedMessage(),
+                            Messages.getString("VennMaker.Error"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
+        } catch (ConversionException exn) {
+            JOptionPane
+                    .showMessageDialog(
+                            null,
+                            "Die Datei wurde mit einer alten Version von VennMaker erstellt und kann nicht geöffnet werden.\n\n" //$NON-NLS-1$
+                                    + exn.getLocalizedMessage(),
+                            Messages.getString("VennMaker.Error"), //$NON-NLS-1$
+                            JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private static void loadVennMakerFromVennFile(String fileName) {
+        Projekt p = Projekt.load(fileName);
+        if (p == null)
+            JOptionPane.showMessageDialog(null,
+                    Messages.getString("VennMaker.ErrorLoading") //$NON-NLS-1$
+                            + fileName, Messages.getString("VennMaker.Error"), //$NON-NLS-1$
+                    JOptionPane.ERROR_MESSAGE);
+        else {
+            VennMaker.getInstance().setTitle(
+                    Messages.getString("VennMaker.VennMaker") + VERSION + " [" //$NON-NLS-1$ //$NON-NLS-2$
+                            + fileName + "]"); //$NON-NLS-1$
+            VennMaker.getInstance().setProjekt(p);
+            // VennMaker.getInstance().resetUndoRedoControls();
+
+            /**
+             * Verlinkungen aktualisieren
+             */
+            VennMaker.getInstance().setCurrentWorkingDirectory(
+                    new File(fileName).getParent());
+            FileOperations.changeRootFolder(VMPaths
+                    .getCurrentWorkingDirectory());
+
+
+            loadModuleData();
         }
 
-		/*
-		 * Wenn die Konfigurationsoberfläche nicht gestartet werden soll, starte
-		 * direkt mit dem VennMaker-Hauptfenster.
-		 */
-        if (startMode == StartChooser.FREE_DRAWING) {
-            showMainWindow();
-        } else if (startMode == StartChooser.LOAD_CONFIGURATION_FOR_EDIT
-                || startMode == StartChooser.PERFORM_INTERVIEW
-                || startMode == StartChooser.CREATE_QUESTIONAIRE
-                || startMode == StartChooser.EDIT_TEMPLATE) {
+        showMainWindow();
+    }
 
-            showMainWindow();
+    private static void loadVennMakerFromVMTFile(String fileName) {
+        showMainWindow();
 
-            final int mode = startMode;
+        File openFile = new File(fileName);
+        ConfigDialog.getInstance().setLastTemplateLocation(
+                openFile.getParentFile().getAbsolutePath());
 
-            SwingUtilities.invokeLater(new Runnable() {
+        TemplateBackgroundOperations tbo = new TemplateBackgroundOperations(
+                openFile, VennMaker.getInstance(), true,
+                TemplateOperation.LOAD);
+        tbo.startAction();
+    }
 
-                @Override
-                public void run() {
 
-                    if (mode == StartChooser.PERFORM_INTERVIEW) {
-                        ConfigDialog.getInstance().showLoadTemplateDialog(true);
-                    }
-
-                    if (mode == StartChooser.CREATE_QUESTIONAIRE) {
-                        ConfigDialog diag = new ConfigDialog(
-                                CDialogInterviewCreator.class, true);
-                    }
-
-                    if (mode == StartChooser.LOAD_CONFIGURATION_FOR_EDIT) {
-                        ConfigDialog diag = new ConfigDialog(
-                                CDialogInterviewCreator.class, false);
-
-                        if (diag.showLoadTemplateDialog(false) == IO.OPERATION_SUCCEEDED)
-                            diag.setVisible(true);
-                    }
-
-                    if (mode == StartChooser.EDIT_TEMPLATE) {
-                        ConfigDialog diag = new ConfigDialog(null, false);
-
-                        if (diag.showLoadTemplateDialog(false) == IO.OPERATION_SUCCEEDED)
-                            diag.setVisible(true);
-                    }
-
-                }
-            });
-        } else if (startMode == StartChooser.LOAD_PROJECT) {
-            showMainWindow();
-
-            OpenFileDialog chooser = new OpenFileDialog();
-            chooser.show();
-
-            if (chooser.getFilename() == null || chooser.getFilename().equals(""))
-                return;
-
-            FileOperations.openVmpFile(chooser.getVmpFile(),
-                    chooser.getFilename(), chooser.getLastVisitedDirectory());
-
-            VennMaker.getInstance().refresh();
-        }
+    private static boolean argsAreValid(String[] args) {
+        return args.length == 1 && (args[0].endsWith(".vmt") || args[0].endsWith(".vennEn"));
     }
 
     /**
@@ -2467,36 +2300,6 @@ public class VennMaker extends JFrame {
             if (file != null) {
                 FileOperations.openVmpFile(vmpFile, file.getAbsolutePath(),
                         rootFolder);
-
-                // Projekt p = Projekt.load(file.getAbsolutePath());
-                // if (p == null)
-                // {
-                // JOptionPane.showMessageDialog(null,
-                //							Messages.getString("VennMaker.ErrorLoading") //$NON-NLS-1$
-                //									+ fileName, Messages.getString("VennMaker.Error"), //$NON-NLS-1$
-                // JOptionPane.ERROR_MESSAGE);
-                // exit();
-                // }
-                // else
-                // {
-                //
-                // VennMaker.getInstance().setProjekt(p);
-                // // VennMaker.getInstance().resetUndoRedoControls();
-                //
-                // /**
-                // * Verlinkungen aktualisieren
-                // */
-                // VennMaker.getInstance().setCurrentWorkingDirectory(
-                // file.getParent());
-                // FileOperations.changeRootFolder(VMPaths
-                // .getCurrentWorkingDirectory());
-                //
-                // VMPaths.setLastFileName(file.getAbsolutePath());
-                //
-                // VennMaker.getInstance().setTitle(
-                //							Messages.getString("VennMaker.VennMaker") + VERSION + " [" //$NON-NLS-1$ //$NON-NLS-2$
-                //									+ vmpFile.toString() + "]"); //$NON-NLS-1$
-                // }
             } else {
                 exit();
             }
@@ -2912,361 +2715,5 @@ public class VennMaker extends JFrame {
             }
         }
         return true;
-    }
-}
-
-// Code aus dem Internet
-class DDTabPane extends JTabbedPane {
-    private static final long serialVersionUID = 1L;
-
-    private final GhostGlassPane glassPane = new GhostGlassPane();
-
-    private final Rectangle lineRect = new Rectangle();
-
-    private final Color lineColor = Color.blue;
-
-    private int dragTabIndex = -1;
-
-    private static final int LINEWIDTH = 6;
-
-    private static final String NAME = "test";                    //$NON-NLS-1$
-
-    private Point tabPt;
-
-    public DDTabPane() {
-        super();
-        final DragSourceListener dsl = new DragSourceListener() {
-            public void dragEnter(DragSourceDragEvent e) {
-                e.getDragSourceContext().setCursor(DragSource.DefaultMoveDrop);
-            }
-
-            public void dragExit(DragSourceEvent e) {
-                e.getDragSourceContext().setCursor(DragSource.DefaultMoveNoDrop);
-                lineRect.setRect(0, 0, 0, 0);
-                glassPane.setPoint(new Point(-1000, -1000));
-                glassPane.repaint();
-            }
-
-            public void dragOver(DragSourceDragEvent e) {
-                Point glassPt = e.getLocation();
-                SwingUtilities.convertPointFromScreen(glassPt, glassPane);
-                int targetIdx = getTargetTabIndex(glassPt);
-                if (getTabAreaBounds().contains(glassPt) && targetIdx >= 0
-                        && targetIdx != dragTabIndex && targetIdx != dragTabIndex + 1) {
-                    e.getDragSourceContext().setCursor(DragSource.DefaultMoveDrop);
-                } else {
-                    e.getDragSourceContext().setCursor(DragSource.DefaultMoveNoDrop);
-                }
-            }
-
-            public void dragDropEnd(DragSourceDropEvent e) {
-                lineRect.setRect(0, 0, 0, 0);
-                dragTabIndex = -1;
-                glassPane.setVisible(false);
-                if (hasGhost()) {
-                    glassPane.setVisible(false);
-                    glassPane.setImage(null);
-                }
-            }
-
-            public void dropActionChanged(DragSourceDragEvent e) {
-            }
-        };
-        final Transferable t = new Transferable() {
-            private final DataFlavor FLAVOR = new DataFlavor(
-                    DataFlavor.javaJVMLocalObjectMimeType,
-                    NAME);
-
-            public Object getTransferData(DataFlavor flavor) {
-                return DDTabPane.this;
-            }
-
-            public DataFlavor[] getTransferDataFlavors() {
-                DataFlavor[] f = new DataFlavor[1];
-                f[0] = this.FLAVOR;
-                return f;
-            }
-
-            public boolean isDataFlavorSupported(DataFlavor flavor) {
-                return flavor.getHumanPresentableName().equals(NAME);
-            }
-        };
-        final DragGestureListener dgl = new DragGestureListener() {
-            public void dragGestureRecognized(DragGestureEvent e) {
-                if (getTabCount() <= 1)
-                    return;
-                Point tabPt = e.getDragOrigin();
-                dragTabIndex = indexAtLocation(tabPt.x, tabPt.y);
-                if (dragTabIndex < 0 || !isEnabledAt(dragTabIndex))
-                    return;
-                initGlassPane(e.getComponent(), e.getDragOrigin());
-                try {
-                    e.startDrag(DragSource.DefaultMoveDrop, t, dsl);
-                } catch (InvalidDnDOperationException idoe) {
-                    idoe.printStackTrace();
-                }
-            }
-        };
-        new DropTarget(glassPane, DnDConstants.ACTION_COPY_OR_MOVE,
-                new CDropTargetListener(), true);
-        new DragSource().createDefaultDragGestureRecognizer(this,
-                DnDConstants.ACTION_COPY_OR_MOVE, dgl);
-    }
-
-    class CDropTargetListener implements DropTargetListener {
-        public void dragEnter(DropTargetDragEvent e) {
-            if (isDragAcceptable(e))
-                e.acceptDrag(e.getDropAction());
-            else
-                e.rejectDrag();
-        }
-
-        public void dragExit(DropTargetEvent e) {
-        }
-
-        public void dropActionChanged(DropTargetDragEvent e) {
-        }
-
-        private Point pt_ = new Point();
-
-        public void dragOver(final DropTargetDragEvent e) {
-            Point pt = e.getLocation();
-            if (getTabPlacement() == JTabbedPane.TOP
-                    || getTabPlacement() == JTabbedPane.BOTTOM) {
-                initTargetLeftRightLine(getTargetTabIndex(pt));
-            } else {
-                initTargetTopBottomLine(getTargetTabIndex(pt));
-            }
-            if (hasGhost()) {
-                glassPane.setPoint(pt);
-            }
-            if (!pt_.equals(pt))
-                glassPane.repaint();
-            pt_ = pt;
-        }
-
-        public void drop(DropTargetDropEvent e) {
-            if (isDropAcceptable(e)) {
-                convertTab(dragTabIndex, getTargetTabIndex(e.getLocation()));
-                e.dropComplete(true);
-            } else {
-                e.dropComplete(false);
-            }
-            repaint();
-        }
-
-        public boolean isDragAcceptable(DropTargetDragEvent e) {
-            Transferable t = e.getTransferable();
-            if (t == null)
-                return false;
-            DataFlavor[] f = e.getCurrentDataFlavors();
-            if (t.isDataFlavorSupported(f[0]) && dragTabIndex >= 0) {
-                return true;
-            }
-            return false;
-        }
-
-        public boolean isDropAcceptable(DropTargetDropEvent e) {
-            Transferable t = e.getTransferable();
-            if (t == null)
-                return false;
-            DataFlavor[] f = t.getTransferDataFlavors();
-            if (t.isDataFlavorSupported(f[0]) && dragTabIndex >= 0) {
-                return true;
-            }
-            return false;
-        }
-    }
-
-    private boolean hasGhost = true;
-
-    public void setPaintGhost(boolean flag) {
-        hasGhost = flag;
-    }
-
-    public boolean hasGhost() {
-        return hasGhost;
-    }
-
-    private int getTargetTabIndex(Point glassPt) {
-        Point tabPt = SwingUtilities.convertPoint(glassPane, glassPt,
-                DDTabPane.this);
-        boolean isTB = getTabPlacement() == JTabbedPane.TOP
-                || getTabPlacement() == JTabbedPane.BOTTOM;
-        for (int i = 0; i < getTabCount(); i++) {
-            Rectangle r = getBoundsAt(i);
-            if (isTB)
-                r.setRect(r.x - r.width / 2, r.y, r.width, r.height);
-            else
-                r.setRect(r.x, r.y - r.height / 2, r.width, r.height);
-            if (r.contains(tabPt))
-                return i;
-        }
-        Rectangle r = getBoundsAt(getTabCount() - 1);
-        if (isTB)
-            r.setRect(r.x + r.width / 2, r.y, r.width, r.height);
-        else
-            r.setRect(r.x, r.y + r.height / 2, r.width, r.height);
-        return r.contains(tabPt) ? getTabCount() : -1;
-    }
-
-    @Override
-    public void addTab(String name, Component comp) {
-        super.addTab(name, null, comp, name);
-    }
-
-    @Override
-    public String getTitleAt(int i) {
-        String str = super.getTitleAt(i);
-        if (str.length() > 13)
-            str = str.substring(0, 10) + "...";
-
-        return str;
-    }
-
-    @Override
-    public String getToolTipTextAt(int i) {
-        return super.getTitleAt(i);
-    }
-
-    private void convertTab(int prev, int next) {
-        if (next < 0 || prev == next) {
-            return;
-        }
-        Component cmp = getComponentAt(prev);
-        Component tab = getTabComponentAt(prev);
-        String str = getTitleAt(prev);
-        Icon icon = getIconAt(prev);
-        String tip = getToolTipTextAt(prev);
-        boolean flg = isEnabledAt(prev);
-        int tgtindex = prev > next ? next : next - 1;
-        remove(prev);
-        insertTab(str, icon, cmp, tip, tgtindex);
-        Netzwerk net = VennMaker.getInstance().getProject().getNetzwerke()
-                .get(prev);
-        VennMaker.getInstance().getProject().getNetzwerke().remove(net);
-        VennMaker.getInstance().getProject().getNetzwerke()
-                .insertElementAt(net, tgtindex);
-        setEnabledAt(tgtindex, flg);
-        if (flg)
-            setSelectedIndex(tgtindex);
-        setTabComponentAt(tgtindex, tab);
-    }
-
-    private void initTargetLeftRightLine(int next) {
-        if (next < 0 || dragTabIndex == next || next - dragTabIndex == 1) {
-            lineRect.setRect(0, 0, 0, 0);
-        } else if (next == 0) {
-            Rectangle r = SwingUtilities.convertRectangle(this, getBoundsAt(0),
-                    glassPane);
-            lineRect.setRect(r.x - LINEWIDTH / 2, r.y, LINEWIDTH, r.height);
-        } else {
-            Rectangle r = SwingUtilities.convertRectangle(this,
-                    getBoundsAt(next - 1), glassPane);
-            lineRect.setRect(r.x + r.width - LINEWIDTH / 2, r.y, LINEWIDTH,
-                    r.height);
-        }
-    }
-
-    private void initTargetTopBottomLine(int next) {
-        if (next < 0 || dragTabIndex == next || next - dragTabIndex == 1) {
-            lineRect.setRect(0, 0, 0, 0);
-        } else if (next == 0) {
-            Rectangle r = SwingUtilities.convertRectangle(this, getBoundsAt(0),
-                    glassPane);
-            lineRect.setRect(r.x, r.y - LINEWIDTH / 2, r.width, LINEWIDTH);
-        } else {
-            Rectangle r = SwingUtilities.convertRectangle(this,
-                    getBoundsAt(next - 1), glassPane);
-            lineRect.setRect(r.x, r.y + r.height - LINEWIDTH / 2, r.width,
-                    LINEWIDTH);
-        }
-    }
-
-    private void initGlassPane(Component c, Point tabPt) {
-        getRootPane().setGlassPane(glassPane);
-        if (hasGhost()) {
-            Rectangle rect = getBoundsAt(dragTabIndex);
-            BufferedImage image = new BufferedImage(c.getWidth(), c.getHeight(),
-                    BufferedImage.TYPE_INT_ARGB);
-            Graphics g = image.getGraphics();
-            c.paint(g);
-            rect.x = rect.x < 0 ? 0 : rect.x;
-            rect.y = rect.y < 0 ? 0 : rect.y;
-
-            // Ueberpruefen ob Tab nicht zu gross (durch Ueberlaenge beim Netzwerk
-            // Namen
-            // z.B.)
-            rect.width = rect.width >= image.getWidth() ? image.getWidth()
-                    - rect.x - 35 : rect.width;
-
-            image = image.getSubimage(rect.x, rect.y, rect.width, rect.height);
-            glassPane.setImage(image);
-        }
-        Point glassPt = SwingUtilities.convertPoint(c, tabPt, glassPane);
-        this.tabPt = tabPt;
-        glassPane.setPoint(glassPt);
-        glassPane.setVisible(true);
-    }
-
-    private Rectangle getTabAreaBounds() {
-        Rectangle tabbedRect = getBounds();
-        Component comp = getSelectedComponent();
-        int idx = 0;
-        while (comp == null && idx < getTabCount())
-            comp = getComponentAt(idx++);
-        Rectangle compRect = (comp == null) ? new Rectangle() : comp.getBounds();
-        int tabPlacement = getTabPlacement();
-        if (tabPlacement == TOP) {
-            tabbedRect.height = tabbedRect.height - compRect.height;
-        } else if (tabPlacement == BOTTOM) {
-            tabbedRect.y = tabbedRect.y + compRect.y + compRect.height;
-            tabbedRect.height = tabbedRect.height - compRect.height;
-        } else if (tabPlacement == LEFT) {
-            tabbedRect.width = tabbedRect.width - compRect.width;
-        } else if (tabPlacement == RIGHT) {
-            tabbedRect.x = tabbedRect.x + compRect.x + compRect.width;
-            tabbedRect.width = tabbedRect.width - compRect.width;
-        }
-        tabbedRect.grow(2, 2);
-        return tabbedRect;
-    }
-
-    class GhostGlassPane extends JPanel {
-        private static final long serialVersionUID = 1L;
-
-        private final AlphaComposite composite;
-
-        private Point location = new Point(0, 0);
-
-        private BufferedImage draggingGhost = null;
-
-        public GhostGlassPane() {
-            setOpaque(false);
-            composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f);
-            setCursor(null); // xxx
-        }
-
-        public void setImage(BufferedImage draggingGhost) {
-            this.draggingGhost = draggingGhost;
-        }
-
-        public void setPoint(Point location) {
-            this.location = location;
-        }
-
-        public void paintComponent(Graphics g) {
-            Graphics2D g2 = (Graphics2D) g;
-            g2.setComposite(composite);
-            if (draggingGhost != null) {
-                double xx = location.getX() - (draggingGhost.getWidth(this) / 2d);
-                double yy = location.getY() - (draggingGhost.getHeight(this) / 2d);
-                g2.drawImage(draggingGhost, (int) xx, (int) yy, null);
-            }
-            if (dragTabIndex >= 0) {
-                g2.setPaint(lineColor);
-                g2.fill(lineRect);
-            }
-        }
     }
 }
