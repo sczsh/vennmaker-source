@@ -185,14 +185,6 @@ public class VennMaker extends JFrame {
 
     public static String VERSION = Version.VENNMAKER_VERSION;                            //$NON-NLS-1$
 
-    public static int internVERSION = 2000000;                                        // e.g.
-    // 1
-    // 04
-    // 01
-    // 11
-    // =
-    // 1.4.1.11
-
     public static String REVISION = "";                                            //$NON-NLS-1$
 
     private static VennMaker vennMakerInstance;
@@ -2061,7 +2053,6 @@ public class VennMaker extends JFrame {
         }
 
         Environment.initializeWorkspace();
-        module = Environment.loadPlugins();
         startVennMakerInSelectedMode(startMode);
     }
 
