@@ -185,14 +185,6 @@ public class VennMaker extends JFrame {
 
     public static String VERSION = Version.VENNMAKER_VERSION;                            //$NON-NLS-1$
 
-    public static int internVERSION = 2000000;                                        // e.g.
-    // 1
-    // 04
-    // 01
-    // 11
-    // =
-    // 1.4.1.11
-
     public static String REVISION = "";                                            //$NON-NLS-1$
 
     private static VennMaker vennMakerInstance;
@@ -1973,22 +1965,6 @@ public class VennMaker extends JFrame {
                 }
             VennMaker.getInstance().getProject().setCurrentNetzwerk(n);
 
-			/*
-			 * Noch ändern: if (!view.isFilterActive() &&
-			 * VennMaker.getInstance().getProject().getFilter() != null) {
-			 * activateFilterButton.setEnabled(true); view.deactivateFilter();
-			 * activateFilterButton.setText(Messages.getString("VennMaker.19"));
-			 * //$NON-NLS-1$ } else if (view.isFilterActive() &&
-			 * VennMaker.getInstance().getProject().getFilter() != null) { boolean
-			 * visible = false; activateFilterButton.setEnabled(true); String
-			 * filter = VennMaker.getInstance().getProject().getFilter();
-			 * MySearchListener msl = new FilterDialog(visible,
-			 * activateFilterButton).new MySearchListener(filter); msl.filter();
-			 * activateFilterButton.setText(Messages.getString("VennMaker.18"));
-			 * //$NON-NLS-1$ }
-			 */
-
-            // Informiere Listener über Netzwerkwechsel
             for (VennListener listener : VennMaker.getInstance().netzwerkChangeListeners)
                 listener.update();
         }
@@ -2052,16 +2028,16 @@ public class VennMaker extends JFrame {
      */
     public static void main(String[] args) {
 
-        StartMode startMode = StartMode.FREE_DRAWING;
+        StartMode startMode;
 
         if(argsAreValid(args)) {
             processArgs(args);
+            startMode = StartMode.FREE_DRAWING;
         } else {
             startMode = showStartChooserAndGetStartMode();
         }
 
         Environment.initializeWorkspace();
-        module = Environment.loadPlugins();
         startVennMakerInSelectedMode(startMode);
     }
 
@@ -2313,70 +2289,6 @@ public class VennMaker extends JFrame {
     }
 
     /**
-     *
-     * @param oldSizes
-     *           Array of old available actorsizes
-     * @param newSizes
-     *           Array of new available actorsizes
-     * @param currentSize
-     *           current size of Actor
-     * @return new size for actor
-     */
-    public static int getNewSize(Integer[] oldSizes, Integer[] newSizes,
-                                 int currentSize) {
-        int newSize = currentSize;
-        int i = 0;
-        while ((i < oldSizes.length) && (oldSizes[i] != currentSize)) {
-            i++;
-        }
-        newSize = newSizes[i];
-        return newSize;
-    }
-
-    /**
-     * resizes all actors in the given Project
-     *
-     * @param oldSizes
-     *           Array of old available actorsizes
-     * @param newSizes
-     *           Array of new available actorsizes
-     * @param currentProject
-     *           the current project
-     */
-    public static void resizeAllActors(Integer[] oldSizes, Integer[] newSizes,
-                                       Projekt currentProject) {
-        int i = 0;
-        ComplexEvent event = new ComplexEvent(
-                Messages.getString("VennMaker.Resize_all_actors")); //$NON-NLS-1$
-
-        while ((i < oldSizes.length - 1) && (oldSizes[i] < oldSizes[i + 1]))
-            i++;
-        int oldMax = i;
-
-        i = 0;
-        while ((i < newSizes.length - 1) && (newSizes[i] < newSizes[i + 1]))
-            i++;
-        int newMax = i;
-
-        for (Akteur actor : currentProject.getAkteure())
-            for (Netzwerk network : currentProject.getNetzwerke()) {
-                if (network.getAkteure().contains(actor)) {
-                    // TODO
-                    // int currentSize = actor.getGroesse(network);
-                    // i = 0;
-                    // while ((i < oldSizes.length) && (oldSizes[i] !=
-                    // currentSize))
-                    // i++;
-                    // int sizeChange = (int) (((double) i / (double) oldMax) *
-                    // (double) newMax);
-                    // event.addEvent((new SizeActorEvent(actor, network,
-                    // (double) newSizes[sizeChange] / (double) currentSize)));
-                }
-            }
-        EventProcessor.getInstance().fireEvent(event);
-    }
-
-    /**
      * durchläuft alle Relationen in allen Netzwerken, und überprüft, ob sie noch
      * bestehende Attribute enthalten - wenn nicht, werden die entsprechenden
      * Relationen gelöscht
@@ -2424,23 +2336,10 @@ public class VennMaker extends JFrame {
     }
 
     public void setCurrentWorkingDirectory(String newWorkingDirectory) {
-        //		if (newWorkingDirectory.endsWith("/") //$NON-NLS-1$
-        //				|| newWorkingDirectory.endsWith("\\")) //$NON-NLS-1$
-        // VennMaker.currentWorkingDirectory = newWorkingDirectory;
-        // else
-        //			VennMaker.currentWorkingDirectory = newWorkingDirectory + "/"; //$NON-NLS-1$
-
         if (!newWorkingDirectory.endsWith(VMPaths.SEPARATOR))
             newWorkingDirectory += VMPaths.SEPARATOR;
 
         VMPaths.setCurrentWorkingDirectory(newWorkingDirectory);
-        // TODO
-        // for (AkteurTyp tempActorType : VennMaker.getInstance().getProject()
-        // .getAkteurTypen())
-        // tempActorType.setImageFile(VennMaker.getInstance()
-        // .getCurrentWorkingDirectory()
-        //					+ "images/symbols/" //$NON-NLS-1$
-        // + new File(tempActorType.getImageFile()).getName());
     }
 
     public void setInterviewMode(boolean interviewMode) {
@@ -2488,9 +2387,6 @@ public class VennMaker extends JFrame {
         cdLayer.addNetworkElement(CDialogRelationColorTable.class);
         cdLayer.addNetworkElement(CDialogRelationDashTable.class);
         cdLayer.addNetworkElement(CDialogRelationSizeTable.class);
-        // cdLayer.addNetworkElement(CDialogRelationColor.class);
-        // cdLayer.addNetworkElement(CDialogRelationSize.class);
-        // cdLayer.addNetworkElement(CDialogRelationDash.class);
 
         cdLayer.addNetworkElement(CDialogSector.class);
         cdLayer.addNetworkElement(CDialogCircle.class);
