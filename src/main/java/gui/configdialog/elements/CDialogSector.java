@@ -46,7 +46,13 @@ public class CDialogSector extends ConfigDialogElement {
 
     private JButton editAttributeButton;
 
-    private JButton newAttributeButton;
+	private JButton												newAttributeButton;
+
+	// add the sectors to canvas
+	private JButton												addToChartButton;
+
+	// delete the sectors from canvas
+	private JButton												deleteFromChartButton;
 
     private JSlider sectorTransparency;
 
@@ -72,6 +78,10 @@ public class CDialogSector extends ConfigDialogElement {
                     Messages.getString("CDialogEditAttributeTypes.4")); //$NON-NLS-1$
             newAttributeButton = new JButton(
                     Messages.getString("EditIndividualAttributeTypeDialog.19")); //$NON-NLS-1$
+            addToChartButton = new JButton(
+                    Messages.getString("ConfigDialog.50"));
+            deleteFromChartButton = new JButton(
+                    Messages.getString("ConfigDialog.51"));
             // Sector Dialog
             sTableModel = new SectorTableModel(this);
             if (sectorAttrib == null) {
@@ -166,6 +176,23 @@ public class CDialogSector extends ConfigDialogElement {
                     cb.setSelectedItem(a == null ? "" : a.getLabel());
                 }
             });
+            addToChartButton.addActionListener(new ActionListener()
+            {
+                @Override
+                public void actionPerformed(ActionEvent e)
+                {
+                    getFinalSetting().set();
+                }
+            });
+
+            deleteFromChartButton.addActionListener(new ActionListener()
+            {
+                @Override
+                public void actionPerformed(ActionEvent e)
+                {
+                    ((SettingSector)getFinalSetting()).delete();
+                }
+            });
             TableColumnModel cm = table.getColumnModel();
             cm.getColumn(1).setCellRenderer(new ColorCellRenderer());
             cm.getColumn(2).setCellEditor(new ColorButtonCellEditor(this));
@@ -203,92 +230,112 @@ public class CDialogSector extends ConfigDialogElement {
             GridBagConstraints gbc;
             dialogPanel.setLayout(layout);
 
-            gbc = new GridBagConstraints();
-            gbc.anchor = GridBagConstraints.FIRST_LINE_START;
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.gridx = 0;
-            gbc.gridy = 0;
-            gbc.weightx = 0;
-            gbc.gridwidth = 1;
-            gbc.insets = new Insets(10, 10, 0, 20);
-            layout.setConstraints(attLabel, gbc);
-            dialogPanel.add(attLabel);
+			gbc = new GridBagConstraints();
+			gbc.anchor = GridBagConstraints.FIRST_LINE_START;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.gridx = 0;
+			gbc.gridy = 0;
+			gbc.weightx = 0;
+			gbc.gridwidth = 1;
+			gbc.insets = new Insets(10, 10, 0, 5);
+			layout.setConstraints(attLabel, gbc);
+			dialogPanel.add(attLabel);
 
-            gbc = new GridBagConstraints();
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.gridx = 1;
-            gbc.gridy = 0;
-            gbc.weightx = 1;
-            gbc.gridwidth = 1;
-            gbc.insets = new Insets(10, 0, 0, 10);
-            layout.setConstraints(cb, gbc);
-            dialogPanel.add(cb);
+			gbc = new GridBagConstraints();
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.gridx = 1;
+			gbc.gridy = 0;
+			gbc.weightx = 1;
+			gbc.gridwidth = 1;
+			gbc.insets = new Insets(10, 0, 0, 5);
+			layout.setConstraints(cb, gbc);
+			dialogPanel.add(cb);
 
-            gbc = new GridBagConstraints();
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.gridx = 2;
-            gbc.gridy = 0;
-            gbc.weightx = 1;
-            gbc.gridwidth = 1;
-            gbc.insets = new Insets(10, 0, 0, 10);
-            layout.setConstraints(editAttributeButton, gbc);
-            dialogPanel.add(editAttributeButton);
+			gbc = new GridBagConstraints();
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.gridx = 2;
+			gbc.gridy = 0;
+			gbc.weightx = 1;
+			gbc.gridwidth = 1;
+			gbc.insets = new Insets(10, 0, 0, 5);
+			layout.setConstraints(editAttributeButton, gbc);
+			dialogPanel.add(editAttributeButton);
 
-            gbc = new GridBagConstraints();
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.gridx = 3;
-            gbc.gridy = 0;
-            gbc.weightx = 1;
-            gbc.gridwidth = 1;
-            gbc.insets = new Insets(10, 0, 0, 10);
-            layout.setConstraints(newAttributeButton, gbc);
-            dialogPanel.add(newAttributeButton);
+			gbc = new GridBagConstraints();
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.gridx = 3;
+			gbc.gridy = 0;
+			gbc.weightx = 1;
+			gbc.gridwidth = 1;
+			gbc.insets = new Insets(10, 0, 0, 5);
+			layout.setConstraints(newAttributeButton, gbc);
+			dialogPanel.add(newAttributeButton);
 
-            gbc = new GridBagConstraints();
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.gridx = 0;
-            gbc.gridy = 1;
-            gbc.gridwidth = 1;
-            gbc.weightx = 0;
-            gbc.insets = new Insets(10, 10, 0, 20);
-            layout.setConstraints(transLabel, gbc);
-            dialogPanel.add(transLabel);
+			gbc = new GridBagConstraints();
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.gridx = 4;
+			gbc.gridy = 0;
+			gbc.weightx = 1;
+			gbc.gridwidth = 1;
+			gbc.insets = new Insets(10, 0, 0, 5);
+			layout.setConstraints(addToChartButton, gbc);
+			dialogPanel.add(addToChartButton);
 
-            gbc = new GridBagConstraints();
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.gridx = 1;
-            gbc.gridy = 1;
-            gbc.gridwidth = 3;
-            gbc.weightx = 1;
-            gbc.insets = new Insets(10, 0, 0, 5);
-            layout.setConstraints(sectorTransparency, gbc);
-            dialogPanel.add(sectorTransparency);
+			gbc = new GridBagConstraints();
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.gridx = 5;
+			gbc.gridy = 0;
+			gbc.weightx = 1;
+			gbc.gridwidth = 1;
+			gbc.insets = new Insets(10, 0, 0, 5);
+			layout.setConstraints(deleteFromChartButton, gbc);
+			dialogPanel.add(deleteFromChartButton);
 
-            gbc = new GridBagConstraints();
-            gbc.anchor = GridBagConstraints.CENTER;
-            gbc.fill = GridBagConstraints.BOTH;
-            gbc.gridx = 0;
-            gbc.gridy = 2;
-            gbc.gridwidth = 4;
-            gbc.weightx = 1;
-            gbc.weighty = 0.5;
-            gbc.insets = new Insets(0, 10, 0, 10);
-            layout.setConstraints(previewSectors, gbc);
-            dialogPanel.add(previewSectors);
+			gbc = new GridBagConstraints();
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.gridx = 0;
+			gbc.gridy = 1;
+			gbc.gridwidth = 1;
+			gbc.weightx = 0;
+			gbc.insets = new Insets(10, 10, 0, 10);
+			layout.setConstraints(transLabel, gbc);
+			dialogPanel.add(transLabel);
 
-            gbc = new GridBagConstraints();
-            gbc.anchor = GridBagConstraints.CENTER;
-            gbc.fill = GridBagConstraints.BOTH;
-            gbc.gridx = 0;
-            gbc.gridy = 4;
-            gbc.gridwidth = 4;
-            gbc.weightx = 1;
-            gbc.weighty = 0.5;
-            gbc.insets = new Insets(0, 10, 10, 10);
-            layout.setConstraints(scroll, gbc);
-            dialogPanel.add(scroll);
-        }
-    }
+			gbc = new GridBagConstraints();
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.gridx = 1;
+			gbc.gridy = 1;
+			gbc.gridwidth = 5;
+			gbc.weightx = 1;
+			gbc.insets = new Insets(10, 0, 0, 5);
+			layout.setConstraints(sectorTransparency, gbc);
+			dialogPanel.add(sectorTransparency);
+
+			gbc = new GridBagConstraints();
+			gbc.anchor = GridBagConstraints.CENTER;
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.gridx = 0;
+			gbc.gridy = 2;
+			gbc.gridwidth = 6;
+			gbc.weightx = 1;
+			gbc.weighty = 0.5;
+			gbc.insets = new Insets(0, 10, 0, 10);
+			layout.setConstraints(previewSectors, gbc);
+			dialogPanel.add(previewSectors);
+
+			gbc = new GridBagConstraints();
+			gbc.anchor = GridBagConstraints.CENTER;
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.gridx = 0;
+			gbc.gridy = 4;
+			gbc.gridwidth = 6;
+			gbc.weightx = 1;
+			gbc.weighty = 0.5;
+			gbc.insets = new Insets(0, 10, 10, 10);
+			layout.setConstraints(scroll, gbc);
+			dialogPanel.add(scroll);
+		}
+	}
 
     public void updateSectorInfos() {
         List<FakeSectorInfo> fakeSectors = previewSectors.getSectors();
@@ -346,20 +393,23 @@ public class CDialogSector extends ConfigDialogElement {
         aTypes = VennMaker.getInstance().getProject()
                 .getAttributeTypesDiscrete("ACTOR");
 
-        cb.addItem("");
-
         for (int i = 0; i < aTypes.size(); i++) {
             cb.addItem(ConfigDialog.getElementCaption(aTypes.get(i).getLabel()));
             // if (a.equals(selectedAttribute))
             // cb.setSelectedIndex(cb.getItemCount() - 1);
         }
 
-        if (selectedAttribute != null)
-            cb.setSelectedItem(ConfigDialog.getElementCaption(selectedAttribute
-                    .getLabel()));
-        else
-            cb.setSelectedItem("");
-    }
+		if (selectedAttribute != null)
+			cb.setSelectedItem(ConfigDialog.getElementCaption(selectedAttribute
+					.getLabel()));
+		else {
+			// cb.setSelectedItem("");
+			if (cb.getItemCount() > 0) {
+				cb.setSelectedIndex(0);
+				cb.setSelectedItem(cb.getItemAt(0));
+			}
+		}
+	}
 
     public int getNumSectors() {
         if (tmpSectors == null)

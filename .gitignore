@@ -6,3 +6,7 @@ iml
 .gitconfig
 .gitignore
 .project
+/.project
+/target/
+# ignore log files
+*.log

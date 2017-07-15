@@ -45,6 +45,12 @@ public class CDialogCircle extends ConfigDialogElement {
 
     private JButton newAttributeButton;
 
+	// add the circles to canvas
+	private JButton					addToChartButton;
+
+	// delete the circles from canvas
+	private JButton					deleteFromChartButton;
+
     private JComboBox cb;
 
     private CircleTableModel tModel;
@@ -66,13 +72,16 @@ public class CDialogCircle extends ConfigDialogElement {
 
             previewCircles = new CirclePreview();
 
-            editAttributeButton = new JButton(
-                    Messages.getString("CDialogEditAttributeTypes.4")); //$NON-NLS-1$
-            newAttributeButton = new JButton(
-                    Messages.getString("EditIndividualAttributeTypeDialog.19")); //$NON-NLS-1$
-
-            if (circleAttrib == null)
-                circleAttrib = net.getHintergrund().getCircleAttribute();
+			editAttributeButton = new JButton(
+					Messages.getString("CDialogEditAttributeTypes.4")); //$NON-NLS-1$
+			newAttributeButton = new JButton(
+					Messages.getString("EditIndividualAttributeTypeDialog.19")); //$NON-NLS-1$
+			addToChartButton = new JButton(
+					Messages.getString("ConfigDialog.50"));
+			deleteFromChartButton = new JButton(
+					Messages.getString("ConfigDialog.51"));
+			if (circleAttrib == null)
+				circleAttrib = net.getHintergrund().getCircleAttribute();
 
             final VennMakerView view = VennMaker.getInstance().getViewOfNetwork(
                     net);
@@ -85,8 +94,8 @@ public class CDialogCircle extends ConfigDialogElement {
                         .getHintergrund().isCirclesAsc());
             }
 
-            cb = new JComboBox();
-            fillComboBox(cb, circleAttrib);
+			cb = new JComboBox();
+			fillComboBox(cb, circleAttrib);
 
             cb.addActionListener(new ActionListener() {
                 @Override
@@ -128,93 +137,128 @@ public class CDialogCircle extends ConfigDialogElement {
                     cb.setSelectedItem(a == null ? "" : a.getLabel());
                 }
             });
+
+            addToChartButton.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    getFinalSetting().set();
+                }
+            });
+            deleteFromChartButton.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    ((SettingCircle)getFinalSetting()).delete();
+                }
+            });
+
             JLabel attLabel = new JLabel(
                     Messages.getString("CDialogActorPie.Col0"));
 
             JTable table = new JTable(tModel);
 
             JTableHeader header = table.getTableHeader();
-            // header.setUpdateTableInRealTime(true); // "Seit 1.3 ungebr�uchlich"
             header.addMouseListener(tModel.new ColumnListener(table));
             header.setReorderingAllowed(true);
 
-            JScrollPane scrollPane = new JScrollPane(table);
-            scrollPane.setPreferredSize(new Dimension(400, 200));
+			JScrollPane scrollPane = new JScrollPane(table);
+			scrollPane.setPreferredSize(new Dimension(400, 100));
 
             GridBagConstraints gbc;
             GridBagLayout layout = new GridBagLayout();
             dialogPanel.setLayout(layout);
 
-            gbc = new GridBagConstraints();
-            gbc.anchor = GridBagConstraints.FIRST_LINE_START;
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.gridx = 0;
-            gbc.gridy = 0;
-            gbc.weightx = 0.25;
-            gbc.gridwidth = 1;
-            gbc.insets = new Insets(10, 10, 0, 10);
-            layout.setConstraints(attLabel, gbc);
-            dialogPanel.add(attLabel);
+			gbc = new GridBagConstraints();
+			gbc.anchor = GridBagConstraints.FIRST_LINE_START;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.gridx = 0;
+			gbc.gridy = 0;
+			gbc.weightx = 0.2;
+			gbc.gridwidth = 1;
+			gbc.insets = new Insets(10, 10, 0, 5);
+			layout.setConstraints(attLabel, gbc);
+			dialogPanel.add(attLabel);
 
 			/* Add combobox to choose the current attribute */
-            gbc = new GridBagConstraints();
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.gridx = 1;
-            gbc.gridy = 0;
-            gbc.weightx = 0.25;
-            gbc.gridwidth = 1;
-            gbc.insets = new Insets(10, 0, 0, 10);
-            layout.setConstraints(cb, gbc);
-            dialogPanel.add(cb);
+			gbc = new GridBagConstraints();
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.gridx = 1;
+			gbc.gridy = 0;
+			gbc.weightx = 0.2;
+			gbc.gridwidth = 1;
+			gbc.insets = new Insets(10, 0, 0, 5);
+			layout.setConstraints(cb, gbc);
+			dialogPanel.add(cb);
 
 			/* "Edit attribute" - Button */
-            gbc = new GridBagConstraints();
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.gridx = 2;
-            gbc.gridy = 0;
-            gbc.weightx = 0.25;
-            gbc.gridwidth = 1;
-            gbc.insets = new Insets(10, 0, 0, 10);
-            layout.setConstraints(editAttributeButton, gbc);
-            dialogPanel.add(editAttributeButton);
+			gbc = new GridBagConstraints();
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.gridx = 2;
+			gbc.gridy = 0;
+			gbc.weightx = 0.2;
+			gbc.gridwidth = 1;
+			gbc.insets = new Insets(10, 0, 0, 5);
+			layout.setConstraints(editAttributeButton, gbc);
+			dialogPanel.add(editAttributeButton);
 
-            gbc = new GridBagConstraints();
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.gridx = 3;
-            gbc.gridy = 0;
-            gbc.weightx = 0.25;
-            gbc.gridwidth = 1;
-            gbc.insets = new Insets(10, 0, 0, 10);
-            layout.setConstraints(newAttributeButton, gbc);
-            dialogPanel.add(newAttributeButton);
+			gbc = new GridBagConstraints();
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.gridx = 3;
+			gbc.gridy = 0;
+			gbc.weightx = 0.2;
+			gbc.gridwidth = 1;
+			gbc.insets = new Insets(10, 0, 0, 5);
+			layout.setConstraints(newAttributeButton, gbc);
+			dialogPanel.add(newAttributeButton);
+
+			gbc = new GridBagConstraints();
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.gridx = 4;
+			gbc.gridy = 0;
+			gbc.weightx = 0.1;
+			gbc.gridwidth = 1;
+			gbc.insets = new Insets(10, 0, 0, 5);
+			layout.setConstraints(addToChartButton, gbc);
+			dialogPanel.add(addToChartButton);
+
+			gbc = new GridBagConstraints();
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.gridx = 5;
+			gbc.gridy = 0;
+			gbc.weightx = 0.1;
+			gbc.gridwidth = 1;
+			gbc.insets = new Insets(10, 0, 0, 5);
+			layout.setConstraints(deleteFromChartButton, gbc);
+			dialogPanel.add(deleteFromChartButton);
 
 			/* Previewwindow to display current circles */
-            gbc = new GridBagConstraints();
-            gbc.anchor = GridBagConstraints.CENTER;
-            gbc.fill = GridBagConstraints.BOTH;
-            gbc.gridx = 0;
-            gbc.gridy = 1;
-            gbc.gridwidth = 4;
-            gbc.weightx = 5.0;
-            gbc.weighty = 5.0;
-            gbc.insets = new Insets(10, 10, 10, 10);
-            layout.setConstraints(previewCircles, gbc);
-            dialogPanel.add(previewCircles);
+			gbc = new GridBagConstraints();
+			gbc.anchor = GridBagConstraints.CENTER;
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.gridx = 0;
+			gbc.gridy = 1;
+			gbc.gridwidth = 6;
+			gbc.weightx = 5.0;
+			gbc.weighty = 5.0;
+			gbc.insets = new Insets(10, 10, 10, 10);
+			layout.setConstraints(previewCircles, gbc);
+			dialogPanel.add(previewCircles);
 
 			/* the table in a scrollpane to see current attributetypes */
-            gbc = new GridBagConstraints();
-            gbc.anchor = GridBagConstraints.LAST_LINE_START;
-            gbc.fill = GridBagConstraints.BOTH;
-            gbc.gridx = 0;
-            gbc.gridy = 2;
-            gbc.gridwidth = 4;
-            gbc.weightx = 5.0;
-            gbc.weighty = 2.5;
-            gbc.insets = new Insets(10, 10, 10, 10);
-            layout.setConstraints(scrollPane, gbc);
-            dialogPanel.add(scrollPane);
-        }
-    }
+			gbc = new GridBagConstraints();
+			gbc.anchor = GridBagConstraints.LAST_LINE_START;
+			gbc.fill = GridBagConstraints.BOTH;
+			gbc.gridx = 0;
+			gbc.gridy = 2;
+			gbc.gridwidth = 6;
+			gbc.weightx = 5.0;
+			gbc.weighty = 2.5;
+			gbc.insets = new Insets(10, 10, 10, 10);
+			layout.setConstraints(scrollPane, gbc);
+			dialogPanel.add(scrollPane);
+		}
+	}
 
     private void fillComboBox(JComboBox cb, AttributeType selectedAttribute) {
         if (cb == null)
@@ -224,7 +268,6 @@ public class CDialogCircle extends ConfigDialogElement {
         aTypes = VennMaker.getInstance().getProject()
                 .getAttributeTypesDiscrete(getType);
 
-        cb.addItem("");
 
         for (int i = 0; i < aTypes.size(); i++) {
             AttributeType a = aTypes.get(i);

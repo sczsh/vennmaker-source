@@ -11,7 +11,30 @@ import files.VMPaths;
 import gui.Messages;
 import gui.VennMaker;
 
-import javax.swing.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTree;
+import javax.swing.SwingConstants;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -28,7 +51,7 @@ import java.awt.event.WindowEvent;
  * Darstellung.
  */
 @SuppressWarnings("rawtypes")
-public class ConfigDialog extends JFrame implements ActionListener {
+public class ConfigDialog extends JDialog implements ActionListener {
     private static final long serialVersionUID = 1L;
 
     /**
@@ -87,27 +110,30 @@ public class ConfigDialog extends JFrame implements ActionListener {
         this.initialization(show);
     }
 
-    private void initialization(boolean show) {
-        this.setResizable(true);
-        cd = this;
-        this.cdLayer = ConfigDialogLayer.getInstance();
-        tempCache = ConfigDialogTempCache.getInstance();
+	private void initialization(boolean show)
+	{
+		this.setModalityType(ModalityType.APPLICATION_MODAL);
+		this.setResizable(true);
+		cd = this;
+		this.cdLayer = ConfigDialogLayer.getInstance();
+		tempCache = ConfigDialogTempCache.getInstance();
 
-        // Fenster-Einstellungen
-        this.setSize(VennMaker.getInstance().getSize());
+		// Fenster-Einstellungen
+		this.toFront();
 
-        this.toFront();
-        addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                tempCache.cancelAllSettings();
-            }
-        });
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setTitle(Messages.getString("ConfigDialog.0")); //$NON-NLS-1$
-        setIconImage(new ImageIcon(
-                FileOperations.getAbsolutePath("icons/intern/icon.png")).getImage()); //$NON-NLS-1$
-        setLayout(new BorderLayout());
+		addWindowListener(new WindowAdapter()
+		{
+			@Override
+			public void windowClosing(WindowEvent e)
+			{
+				tempCache.cancelAllSettings();
+			}
+		});
+		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		setTitle(Messages.getString("ConfigDialog.0")); //$NON-NLS-1$
+		setIconImage(new ImageIcon(
+				FileOperations.getAbsolutePath("icons/intern/icon.png")).getImage()); //$NON-NLS-1$
+		setLayout(new BorderLayout());
 
         descriptionLabel = new JLabel();
         descriptionLabel.setFont(new Font("Dialog", Font.PLAIN, 12)); //$NON-NLS-1$
@@ -186,9 +212,29 @@ public class ConfigDialog extends JFrame implements ActionListener {
         if (this.expandTree)
             expandTree();
 
-        setLocation(VennMaker.getInstance().getLocation());
-        setVisible(show);
-    }
+		// issue #1
+		int configWidth = 600, configHeight = 400; // default 600x400
+		Dimension mainProgramDemension = VennMaker.getInstance().getSize();
+		double mainProgWidth = mainProgramDemension.getWidth(),
+				mainProgHeight = mainProgramDemension.getHeight();
+		double configDialogRatio = 2.0 / 3; // or 2/3 of the main window
+		double optWidth = mainProgWidth * configDialogRatio,
+				optHeight = mainProgHeight * configDialogRatio;
+		if (mainProgWidth < configWidth) {
+			configWidth = (int)Math.floor(mainProgWidth);
+		} else if (optWidth > configWidth) {
+			configWidth = (int)Math.floor(optWidth);
+		}
+		if (mainProgHeight < configHeight) {
+			configHeight = (int)Math.floor(mainProgHeight);
+		} else if (optHeight > configHeight) {
+			configHeight = (int)Math.floor(optHeight);
+		}
+		this.setSize(configWidth, configHeight);
+		this.setLocationRelativeTo(VennMaker.getInstance());
+
+		setVisible(show);
+	}
 
     /**
      * Methode um den ganzen Baum der Elemente zu erneuern.</br> z.B. noetig wenn
@@ -456,8 +502,8 @@ public class ConfigDialog extends JFrame implements ActionListener {
 
         gbc.gridy = 1;
 
-        JLabel descriptionLabel = new JLabel(
-                Messages.getString("ConfigDialog.Description")); //$NON-NLS-1$
+		JLabel descriptionLabel = new JLabel(
+				Messages.getString("ConfigDialog.Description"), SwingConstants.CENTER); //$NON-NLS-1$
 
         logoPanel.add(descriptionLabel, gbc);
 
